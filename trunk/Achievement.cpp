@@ -45,7 +45,7 @@ AchievementSrv::AchievementSrv(MessageMgr* msgMgr, GS_INT count
 		msgMgr->Register(EMessage_OnlineTaskDone,this);
 	}
 
-    m_bHasRead = false;
+    m_bHasRead = FALSE;
 
     if (!Initialize())
         Finalize();
@@ -210,7 +210,7 @@ void AchievementSrv::ReadAchievements( GS_UINT userIndex, GS_INT startIndex, GS_
 		return;
     }
 
-    m_bHasRead = false;
+    m_bHasRead = FALSE;
 
     GS_DWORD cbBuffer;
     GS_DWORD dwStatus;
@@ -245,7 +245,7 @@ void AchievementSrv::ReadAchievements( GS_UINT userIndex, GS_INT startIndex, GS_
     }
 
 #elif defined(_PS3)
-    m_bHasRead = false;
+    m_bHasRead = FALSE;
 
 	int ret;
 
@@ -264,14 +264,14 @@ void AchievementSrv::ReadAchievements( GS_UINT userIndex, GS_INT startIndex, GS_
         }
     }
 
-    m_bHasRead = true;
+    m_bHasRead = TRUE;
 #endif
 }
 
-bool AchievementSrv::IsEarned(GS_INT achieveIndex)
+GS_BOOL AchievementSrv::IsEarned(GS_INT achieveIndex)
 {
     if (!m_bHasRead)
-        return false;
+        return FALSE;
 
 #if defined(_XBOX) || defined(_XENON)
     XACHIEVEMENT_DETAILS* rgAchievements = ( XACHIEVEMENT_DETAILS* )m_Achievements;
@@ -285,10 +285,10 @@ bool AchievementSrv::IsEarned(GS_INT achieveIndex)
         }
     }
 
-    return false;
+    return FALSE;
 
 #elif defined(_PS3)
-    return m_TrophyData[achieveIndex-1].unlocked;
+    return m_TrophyData[achieveIndex-1].unlocked==true ? 1:0;
 #endif
 }
 
@@ -452,7 +452,7 @@ void AchievementSrv::MessageResponse(Message* message)
                 m_hReadHandle = NULL;
             }
 #endif
-            m_bHasRead = true;
+            m_bHasRead = TRUE;
             break;
 		default:
 			break;

@@ -177,7 +177,7 @@ GS_BOOL StatsSrv::RetrieveLocalUserStats(GS_BOOL bImmediately)
 		if (msg)
 		{
 			msg->AddPayload(EGSTaskType_StatsRetrieveLocal);
-			bool result = (ERROR_SUCCESS == ret) ? true : false;
+			GS_BOOL result = (ERROR_SUCCESS == ret) ? TRUE : FALSE;
 			msg->AddPayload(result);
 
 			msg->AddTarget(Master::G()->GetInterfaceMgr());
@@ -1107,9 +1107,9 @@ void StatsSrv::MessageResponse(Message* message)
 	{
 		msg->AddPayload(taskType);
 #if defined(_XBOX) || defined(_XENON)
-		bool result = (ERROR_SUCCESS == taskResult) ? true : false;
+		GS_BOOL result = (ERROR_SUCCESS == taskResult) ? TRUE : FALSE;
 #elif defined(_PS3)
-		bool result = (0 == taskResult && taskDetailedResult >= 0) ? true : false;
+		GS_BOOL result = (0 == taskResult && taskDetailedResult >= 0) ? TRUE : FALSE;
 #endif
 		msg->AddPayload(result);
 

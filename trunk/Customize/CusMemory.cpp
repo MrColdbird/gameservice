@@ -3,7 +3,7 @@
 #undef GS_USE_ENGINE_MEMORY_SCHEME
 
 // trigger the customized memory management
-#define GS_USE_ENGINE_MEMORY_SCHEME 1
+//#define GS_USE_ENGINE_MEMORY_SCHEME 1
 
 // ======================================================== 
 // Customize memory allignment here:
@@ -88,7 +88,7 @@ GS_BYTE* Realloc( GS_BYTE* ptr, GS_DWORD size, GS_DWORD oldsize )
         if (size != 0)
         {
             // not enough memory
-            Master::G()->Log("[GameService] - Not enough Memory in Realloc !!! \n");
+            FatalError("[GameService] - Not enough Memory in Realloc !!! \n");
             return ptr;
         }
         else

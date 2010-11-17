@@ -61,7 +61,7 @@ void SysMsgBoxManager::Display(GS_INT mode, void* exdata1)
     {
 		case EMODE_KeyFileCorrupted:
 		{
-	        switch(GS_GetSystemLanguage())
+	        switch(GetSystemLanguage())
             {
             default:
             case GS_ELang_English:
@@ -127,7 +127,7 @@ void SysMsgBoxManager::Display(GS_INT mode, void* exdata1)
         break;
     case EMODE_TrophyNoSpace:
         {
-            switch(GS_GetSystemLanguage())
+            switch(GetSystemLanguage())
             {
             default:
             case GS_ELang_English:
@@ -153,7 +153,7 @@ void SysMsgBoxManager::Display(GS_INT mode, void* exdata1)
         break;
     case EMODE_PlayOtherUserSaveData:
         {
-            switch(GS_GetSystemLanguage())
+            switch(GetSystemLanguage())
             {
             default:
             case GS_ELang_English:
@@ -178,7 +178,7 @@ void SysMsgBoxManager::Display(GS_INT mode, void* exdata1)
         }
 	case EMODE_PlayerAgeForbidden:
 		{
-			switch(GS_GetSystemLanguage())
+			switch(GetSystemLanguage())
 			{
 			default:
 			case GS_ELang_English:
@@ -374,7 +374,7 @@ void SysMsgBoxManager::CB_Dialog( int button_type )
 	{
 		msg->AddPayload(msgtype);
 
-		bool result = (CELL_MSGDIALOG_BUTTON_YES == button_type) ? true : false;
+		GS_BOOL result = (CELL_MSGDIALOG_BUTTON_YES == button_type) ? TRUE : FALSE;
 
 		msg->AddPayload(result);
 

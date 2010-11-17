@@ -18,12 +18,6 @@
 #else
 #include <StoreBrowsing.h>
 #endif
-#include "../../Main/MainXenon/Sources/FinalVersionDef.h"
-extern bool gi_IsFullVersion;
-#endif
-
-#if defined(_XBOX) || defined(_XENON)
-extern "C" void xeINO_StorageDeviceReset(void);
 #endif
 
 namespace GameService
@@ -55,14 +49,14 @@ GS_DWORD	SignIn::m_LastSignInStateChange		  = 0;
 GS_BOOL	SignIn::m_SignInChanged				  = FALSE;
 XUID	SignIn::m_InvalidID						= INVALID_XUID;
 XUID	SignIn::m_Xuids   [ XUSER_MAX_COUNT ]	={0,0,0,0};					// Local XUIDs
-GS_BOOL	SignIn::m_bPrivate[ XUSER_MAX_COUNT ]	={false,false,false,false};	// Users consuming private slots
+GS_BOOL	SignIn::m_bPrivate[ XUSER_MAX_COUNT ]	={0,0,0,0};	// Users consuming private slots
 GS_CHAR	SignIn::m_cUserName[XUSER_MAX_COUNT][MAX_USER_NAME] = 
 {
     0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,
     0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,
     0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,
 };
-bool	SignIn::m_bCanNotifyNoProfile = false;
+GS_BOOL	SignIn::m_bCanNotifyNoProfile = FALSE;
 #elif defined(_PS3)
 GS_BOOL SignIn::m_bStarNPInProgress = FALSE;
 GS_INT                 SignIn::m_sceNPStatus       = SCE_NP_ERROR_NOT_INITIALIZED;
@@ -341,7 +335,7 @@ GS_VOID SignIn::Initialize( GS_DWORD dwMinUsers,
     m_bRequireOnlineUsers = bRequireOnlineUsers;
     m_dwSignInPanes = dwSignInPanes;
 
-    m_bCanNotifyNoProfile = false;
+    m_bCanNotifyNoProfile = FALSE;
 
     // Register our notification listener
     m_hNotification = XNotifyCreateListener( XNOTIFY_SYSTEM | XNOTIFY_LIVE );
@@ -524,7 +518,7 @@ void SignIn::PS3_StartNP_Thread(uint64_t instance)
     m_nNumUsers = 1;
 
 	//InGameBrowsing Init for trial version
-	if(!gi_IsFullVersion)
+	if(Master::G()->IsTrialVersion())
 	{
 #ifdef INGAMEBROWSING
 		master->GetInGameBrowsingSrv()->Init();
@@ -706,7 +700,7 @@ GS_DWORD SignIn::Update()
         case XN_SYS_SIGNINCHANGED:
 
             m_LastSignInStateChange = GetTickCount();
-            m_SignInChanged = true;
+            m_SignInChanged = TRUE;
 
             break;
 
@@ -754,11 +748,11 @@ GS_DWORD SignIn::Update()
             if(!AreUsersSignedIn() && !m_bBeforePressStart)
             {
                 // for script
-                m_bCanNotifyNoProfile = true;
+                m_bCanNotifyNoProfile = TRUE;
                 //jin yu:  return to game start set the flag
-                m_bBeforePressStart = true;
+                m_bBeforePressStart = TRUE;
                 m_bSigninUIWasShown = FALSE;
-				StorageDeviceReset();
+				//StorageDeviceReset();
             }
 
 			// Query who is signed in
@@ -933,13 +927,6 @@ void SignIn::StartGame(GS_UINT userIndex)
     // Rich Presence
 #endif
 }
-
-#if defined(_XBOX) || defined(_XENON)
-void SignIn::StorageDeviceReset()
-{
-	xeINO_StorageDeviceReset();
-}
-#endif
 
 } // namespace GameService
 

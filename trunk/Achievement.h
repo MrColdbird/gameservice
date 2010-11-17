@@ -16,7 +16,7 @@ namespace GameService
 class AchievementSrv : public MessageRecipient
 {
 public:
-	AchievementSrv() : m_dwCountMax(0), m_bHasRead(false) {}
+	AchievementSrv() : m_dwCountMax(0), m_bHasRead(FALSE) {}
     AchievementSrv(MessageMgr* msgMgr, GS_INT count
 #if defined(_PS3)
                    , GS_INT freespace
@@ -31,8 +31,8 @@ public:
 	void Write(GS_INT num, GS_INT* ids);
 	void ShowSystemUI(GS_INT userIndex);
 
-    bool HasRead() { return m_bHasRead; }
-	bool IsEarned(GS_INT achieveIndex);
+    GS_BOOL HasRead() { return m_bHasRead; }
+	GS_BOOL IsEarned(GS_INT achieveIndex);
 
 	// inherit from MessageHandler
 	void MessageResponse(Message* message);
@@ -47,7 +47,7 @@ public:
 private:
 	// for enumerate only:
     GS_DWORD   m_dwCountMax;
-    bool    m_bHasRead;
+    GS_BOOL    m_bHasRead;
 #if defined(_XBOX) || defined(_XENON)
     GS_BYTE*   m_Achievements;
 	HANDLE	m_hReadHandle;
