@@ -33,7 +33,7 @@ public:
 
     // Read/write stats
     GS_BOOL				RetrieveLocalUserStats(GS_BOOL bImmediately = FALSE);
-	GS_BOOL				CanWriteStats() { return m_bUserStatsRetrieved && !m_bWritingLeaderboard; }
+	GS_BOOL				CanWriteStats() { return !m_bWritingLeaderboard; }
 	GS_BOOL				FlushLeaderboard();
     GS_BOOL                WriteLeaderboard(GS_INT userIndex);
     GS_BOOL                ReadLeaderboard(GS_INT idx, GS_INT userIndex = 0, GS_INT maxNum = 8, GS_INT myScoreOffset = 0);
@@ -63,13 +63,13 @@ public:
 	{
 	public:
 		LeaderboardInfo() : m_iLBNum(0)
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
 			, m_pViewProp(NULL) 
 #endif
 		{}
 		virtual ~LeaderboardInfo();
 
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
 		LeaderboardInfo(GS_INT lbNum, XSESSION_VIEW_PROPERTIES* pViews);
 		XSESSION_VIEW_PROPERTIES*	m_pViewProp; // Session properties when writing stats
 #endif
@@ -98,9 +98,14 @@ private:
     GS_INT                         m_iFriendsIndexOffset;
 
 	GS_INT							m_iError;
+    GS_BOOL                     m_bReadRequestDuringMyScore;
+    GS_BOOL                     m_bReadRequestDuringMyScore_idx;
+    GS_BOOL                     m_bReadRequestDuringMyScore_userIndex;
+    GS_BOOL                     m_bReadRequestDuringMyScore_maxNum;
 
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
 	XUSER_STATS_SPEC	        m_Spec;                  // Stats specification
+    GS_BOOL                     m_bFlushStatsWaiting;
 
 	// TODO: support multi local player
     //GS_UINT               m_nWritingStatsUser;           // User currently writing stats for

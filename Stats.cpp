@@ -6,7 +6,6 @@
 // ======================================================================================
 
 #include "stdafx.h"
-#include "Customize/CusMemory.h"
 #include "SignIn.h"
 #include "stats.h"
 #include "Task.h"
@@ -22,11 +21,13 @@ StatsSrv::StatsSrv(MessageMgr* msgMgr)
 : m_pStats(NULL), m_iError(0)
 #if defined(_PS3)
 , m_ScoreCtxId(-1), m_TransactionId(-1), m_iRetrievedNum(0)
+#elif defined(_XBOX) || defined(_XENON)
+, m_bFlushStatsWaiting(FALSE)
 #endif
 {
 	if (!Initialize())
     {
-        Finalize();
+		Finalize();
     }
 
 	if (msgMgr)
@@ -61,6 +62,7 @@ GS_BOOL StatsSrv::Initialize()
 {
 	m_bReadingLeaderboard = m_bWritingLeaderboard = FALSE;
 	m_bUserStatsRetrieved = m_bIsReadingMyScore = FALSE;
+    m_bReadRequestDuringMyScore = FALSE;
 
 #if defined(_PS3)
     int ret = -1;
@@ -290,7 +292,7 @@ GS_BOOL StatsSrv::RetrieveLocalUserStats(GS_BOOL bImmediately)
     return TRUE;
 }
 
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
 StatsSrv::LeaderboardInfo::LeaderboardInfo(GS_INT lbNum, XSESSION_VIEW_PROPERTIES* pViews)
 {
 	m_iLBNum = lbNum;
@@ -463,32 +465,17 @@ GS_BOOL StatsSrv::WriteLeaderboard(GS_INT userIndex)
 // ======================================================== 
 void StatsSrv::Update()
 {   
-#if defined(_XBOX) || (_XENON)
+#if defined(_XBOX) || defined(_XENON)
     if (m_pLBInfoArray.Num() > 0)
     {
         WriteLeaderboard(SignIn::GetSignedInUser());
     }
-#endif
-    // +LCTEST
-    static GS_INT s_testwriting = 0;
-    if (s_testwriting)
+
+    if (m_bFlushStatsWaiting)
     {
-        GS_INT score = 3;
-#if defined(_XBOX) || (_XENON)
-#elif defined(_PS3)
-        m_LBDef.Set(0, score);
-#endif
-        WriteLeaderboard(0);
+        FlushLeaderboard();
     }
-	static GS_INT s_testreading = 0;
-	if (s_testreading)
-	{
-#if defined(_XBOX) || (_XENON)
-		m_LBDef.Set(8,0,NULL);
-        ReadLeaderboard(1, 0, 20);
 #endif
-	}
-    // -LCTEST
 }
 
 //--------------------------------------------------------------------------------------
@@ -497,7 +484,18 @@ void StatsSrv::Update()
 //--------------------------------------------------------------------------------------
 GS_BOOL StatsSrv::FlushLeaderboard()
 {
-#if defined(_XBOX) || (_XENON)
+#if defined(_XBOX) || defined(_XENON)
+	if (!Master::G()->GetSessionSrv()->IsStarted())
+		return FALSE;
+
+    if (!Master::G()->GetSessionSrv()->CanWriteStats())
+    {
+        m_bFlushStatsWaiting = TRUE;
+        return FALSE;
+    }
+
+    m_bFlushStatsWaiting = FALSE;
+
 	CTaskID id = 0;
     GS_DWORD ret = XSessionFlushStats(
 		Master::G()->GetSessionSrv()->GetCurrentHandle(),
@@ -524,6 +522,7 @@ GS_BOOL StatsSrv::ReadLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT maxNum, G
 
     m_iFriendsIndexOffset = 0;
 
+    Master::G()->Log("ReadLeaderboard - Start: idx:%d, ReadingLB:%d, ReadingMyScore:%d", idx, m_bReadingLeaderboard, m_bIsReadingMyScore);
     if (0 == idx)
     {
         if (FALSE == m_bIsReadingMyScore)
@@ -538,6 +537,7 @@ GS_BOOL StatsSrv::ReadLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT maxNum, G
             m_iMyScoreMaxNum = maxNum;
 			m_iMyScoreOffset = myScoreOffset;
 
+			Master::G()->Log("ReadLeaderboard - MyScore - RetrieveLocalStats");
             return TRUE;
         }
 
@@ -555,6 +555,7 @@ GS_BOOL StatsSrv::ReadLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT maxNum, G
 #elif defined(_PS3)
             m_iRetrievedNum = 0;
 #endif
+            m_bIsReadingMyScore = FALSE;
 			m_bReadingLeaderboard = FALSE;
             return TRUE;
         }
@@ -563,6 +564,19 @@ GS_BOOL StatsSrv::ReadLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT maxNum, G
         if (idx < 1)
         {
             idx = 1;
+        }
+    }
+    else
+    {
+        // invalid idx for MyScore
+        if (m_bIsReadingMyScore)
+        {
+            m_bReadRequestDuringMyScore = TRUE;
+            m_bReadRequestDuringMyScore_idx = idx;
+            m_bReadRequestDuringMyScore_userIndex = userIndex;
+            m_bReadRequestDuringMyScore_maxNum = maxNum;
+            Master::G()->Log("ReadLeaderboard - Read again before ReadMyScore finished!");
+            return FALSE;
         }
     }
 
@@ -1057,6 +1071,7 @@ void StatsSrv::MessageResponse(Message* message)
 #endif
 		m_bIsReadingMyScore = FALSE;
         m_bReadingLeaderboard = FALSE;
+
         break;
     case EGSTaskType_StatsWrite:
         {
@@ -1070,6 +1085,8 @@ void StatsSrv::MessageResponse(Message* message)
 #endif
         }
         break;
+	default:
+		break;
 	}
 
 #if defined(_PS3)
@@ -1128,6 +1145,14 @@ void StatsSrv::MessageResponse(Message* message)
 			m_bReadingLeaderboard = FALSE;
         }
     }
+
+    // forward to read all 
+    if (EGSTaskType_StatsRead == taskType && m_bReadRequestDuringMyScore)
+    {
+        m_bReadRequestDuringMyScore = FALSE;
+        ReadLeaderboard(m_bReadRequestDuringMyScore_idx, m_bReadRequestDuringMyScore_userIndex, m_bReadRequestDuringMyScore_maxNum, 0);
+    }
+
 
 }
 

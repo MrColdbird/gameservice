@@ -81,15 +81,21 @@ GS_VOID CDECL FatalError( const GS_CHAR* strFormat, ... )
     DebugOutputV( strFormat, pArgList );
     va_end( pArgList );
 
-    DebugBreak();
+    Assert();
 
-    exit(0);
+    // exit(0);
 #endif
 }
 #elif defined(_PS3)
 void FatalError( const char* strFormat, ... )
 {
 #ifdef _DEBUG
+    va_list pArgList;
+    va_start( pArgList, format );
+    printf( format, pArgList );
+    va_end( pArgList );
+
+    Assert();
 #endif
 }
 #endif

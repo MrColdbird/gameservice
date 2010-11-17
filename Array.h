@@ -8,12 +8,11 @@
 #ifndef __GAMESERVICE_ARRAY_H__
 #define __GAMESERVICE_ARRAY_H__
 
-#include "Customize/CusMemory.h"
 
 namespace GameService
 {
 
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
 #define _FORCE_INLINE //__forceinline
 #elif defined(_PS3)
 #define _FORCE_INLINE inline

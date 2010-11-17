@@ -32,7 +32,7 @@ public:
 	void Close();
 	void Cancel();
 	CTaskID GetTaskID() { return m_TaskID; }
-#ifdef _XBOX
+#if defined(_XBOX) || defined(_XENON)
 	PXOVERLAPPED GetXOverlapped() { return &m_XOverlapped; }
 	XPLAYERLIST_RESULT& GetCustomUIResult() { return m_CustomUI_Result; }
 #endif
@@ -48,8 +48,9 @@ public:
 private:
 	CTaskID 	m_TaskID;
 	GS_BOOL		m_TaskStarted,m_TaskFinished;
+    GS_CHAR		m_cTypeName[128];
 
-#ifdef _XBOX
+#if defined(_XBOX) || defined(_XENON)
 	GS_DWORD 		m_TaskResult;
 	XPLAYERLIST_RESULT	m_CustomUI_Result;
 	XOVERLAPPED			m_XOverlapped;
@@ -71,7 +72,7 @@ public:
 
 	void UpdateAll();
 
-#ifdef _XBOX
+#if defined(_XBOX) || defined(_XENON)
 	PXOVERLAPPED AddTask(GS_TaskType taskType, MessageRecipient* taskRecipient, CTaskID* taskId);
 	PXOVERLAPPED StartNewTask(GS_TaskType taskType, MessageRecipient* taskRecipient);
 	void StartTask(CTaskID taskId, GS_DWORD errorCode);

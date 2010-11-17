@@ -64,6 +64,7 @@ GS_CHAR	SignIn::m_cUserName[XUSER_MAX_COUNT][MAX_USER_NAME] =
 };
 bool	SignIn::m_bCanNotifyNoProfile = false;
 #elif defined(_PS3)
+GS_BOOL SignIn::m_bStarNPInProgress = FALSE;
 GS_INT                 SignIn::m_sceNPStatus       = SCE_NP_ERROR_NOT_INITIALIZED;
 SceNpId				SignIn::m_sceNpID			= 
 {
@@ -200,15 +201,12 @@ void SignIn::NetSysUtilCbInternal(uint64_t status, uint64_t param, void * userda
             }
             switch (result.result) {
             case 0:
-                StartNP(TRUE);
                 break;
             case CELL_NET_CTL_ERROR_NET_NOT_CONNECTED:
-                Master::G()->Log("CELL_NET_CTL_ERROR_NET_NOT_CONNECTED");
-                StartNP(FALSE);
+                Master::G()->Log("CELL_SYSUTIL_NET_CTL_NETSTART_FINISHED result: CELL_NET_CTL_ERROR_NET_NOT_CONNECTED");
                 break;
             default:
-                Master::G()->Log("result error = 0x%x", result.result);
-                StartNP(FALSE);
+                Master::G()->Log("CELL_SYSUTIL_NET_CTL_NETSTART_FINISHED result error = 0x%x", result.result);
                 break;
             }
         }
@@ -216,6 +214,7 @@ void SignIn::NetSysUtilCbInternal(uint64_t status, uint64_t param, void * userda
 	case CELL_SYSUTIL_NET_CTL_NETSTART_UNLOADED:
 		Master::G()->Log("CELL_SYSUTIL_NET_CTL_NETSTART_UNLOADED");
         cellSysutilUnregisterCallback(m_iCheckConnectionSlot);
+
 		break;
 	default:
 		break;
@@ -230,13 +229,13 @@ void SignIn::NpManagerCallBack(int event, int result, void *arg)
 	case SCE_NP_MANAGER_STATUS_ONLINE:
 		Master::G()->Log("[GameService] - <MANAGER CB> online");
         {
-            StartNP(TRUE);
+            StartNP();
         }
 		break;
 	case SCE_NP_MANAGER_STATUS_OFFLINE:
 		Master::G()->Log("[GameService] - <MANAGER CB> offline");
         {
-            StartNP(FALSE);
+            StartNP();
         }
 		break;
     case SCE_NP_MANAGER_EVENT_GOT_TICKET:
@@ -291,7 +290,7 @@ void SignIn::SignInNP()
 {
     if (!CheckConnection())
     {
-        StartNP(FALSE);
+        StartNP();
     }
 }
 
@@ -348,7 +347,7 @@ GS_VOID SignIn::Initialize( GS_DWORD dwMinUsers,
     m_hNotification = XNotifyCreateListener( XNOTIFY_SYSTEM | XNOTIFY_LIVE );
     if( m_hNotification == NULL || m_hNotification == INVALID_HANDLE_VALUE )
     {
-        FatalError( "Failed to create state notification listener." );
+        FatalError( "Failed to create state notification listener.\n" );
     }
 
     QuerySigninStatus();
@@ -356,7 +355,7 @@ GS_VOID SignIn::Initialize( GS_DWORD dwMinUsers,
 #elif defined(_PS3)
     if (!StartNet())
     {
-        StartNP(FALSE);
+        StartNP();
         return;
     }
 
@@ -366,7 +365,7 @@ GS_VOID SignIn::Initialize( GS_DWORD dwMinUsers,
     }
     else
     {
-        StartNP(FALSE);
+        StartNP();
     }
 #endif
 }
@@ -381,7 +380,7 @@ GS_BOOL SignIn::StartNet()
         ret = sys_net_initialize_network();
         if (ret != CELL_OK) 
         {
-            FatalError( "sys_net_initialize_network failed (0x%x)", ret );
+            FatalError( "sys_net_initialize_network failed (0x%x)\n", ret );
 
             ret = sys_net_finalize_network();
             if (ret < 0) 
@@ -419,13 +418,36 @@ GS_BOOL SignIn::StartNet()
     return TRUE;
 }
 
-GS_BOOL SignIn::StartNP(GS_BOOL isOnline)
+GS_BOOL SignIn::StartNP()
+{
+    if (m_bStarNPInProgress)
+    {
+        return FALSE;
+    }
+
+    sys_ppu_thread_t temp_id;
+	int ret = -1;
+    ret = sys_ppu_thread_create(
+        &temp_id, PS3_StartNP_Thread,
+        (uintptr_t)(Master::G()), THREAD_PRIO, STACK_SIZE,
+        0, "GameService StarNP Thread");
+    if (ret < 0) {
+        Master::G()->Log("[GameService] - sys_ppu_thread_create() for StartNP failed (%x)", ret);
+        return FALSE;
+    }
+
+    m_bStarNPInProgress = TRUE;
+
+    return TRUE;
+}
+
+void SignIn::PS3_StartNP_Thread(uint64_t instance)
 {
 #if !defined(_FINAL_RELEASE_)
 	TimeCheck t = TimeCheck("StartNP");
 #endif
 
-    m_bIsOnline = isOnline;
+    Master* master = (Master*)instance;
 
     GS_INT ret = -1;
     ret = cellSysmoduleLoadModule(CELL_SYSMODULE_SYSUTIL_NP);
@@ -434,32 +456,88 @@ GS_BOOL SignIn::StartNP(GS_BOOL isOnline)
         ret = sceNpInit(NP_POOL_SIZE, np_pool);
         if (ret != CELL_OK && ret != SCE_NP_ERROR_ALREADY_INITIALIZED) 
         {
-            FatalError( "sceInit failed (0x%x)", ret );
+            FatalError( "sceInit failed (0x%x)\n", ret );
 
             ret = sceNpTerm();
             if (ret < 0) 
             {
-                Master::G()->Log("sceNpTerm() failed (0x%x)", ret);
+                master->Log("sceNpTerm() failed (0x%x)", ret);
             }
 
             ret = cellSysmoduleUnloadModule(CELL_SYSMODULE_SYSUTIL_NP);
             if (ret < 0)
             {
-                Master::G()->Log("cellSysmoduleUnloadModule() failed (0x%x)", ret);
+                master->Log("cellSysmoduleUnloadModule() failed (0x%x)", ret);
             }
-            return FALSE;
+            return;
         }
     }
     else
     {
-        return FALSE;
+        return;
     }
+
+	ret = sceNpManagerGetNpId(&m_sceNpID);
+	if (ret < 0) {
+		master->Log("sceNpManagerGetNpId() failed. ret = 0x%x", ret);
+	}
+
+    Master::G()->Log("[GameService] - GetOnlineId: %s", m_sceNpID.handle.data);
+
+	ret = sceNpManagerGetOnlineName(&m_sceOnlineName);
+	if (ret < 0) {
+		master->Log("sceNpManagerGetOnlineName() failed. ret = 0x%x", ret);
+	}
+    master->Log("[GameService] - GetOnlineName: %s", m_sceOnlineName.data);
+
+	ret = sceNpManagerGetAvatarUrl(&m_sceAvatarUrl);
+	if (ret < 0) {
+		master->Log("sceNpManagerGetAvatarUrl() failed. ret = 0x%x", ret);
+	}
+    master->Log("[GameService] - GetAvatarUrl: %s", m_sceAvatarUrl.data);
+
+	ret = sceNpManagerGetMyLanguages(&m_sceMyLang);
+	if (ret < 0) {
+		master->Log("sceNpManagerGetMyLanguages() failed. ret = 0x%x", ret);
+	}
+    master->Log("[GameService] - GetMyLanguage: %d", m_sceMyLang.language1);
+
+	ret = sceNpManagerGetAccountRegion(&m_sceCountryCode, &m_sceLangCode);
+	if (ret < 0) {
+		master->Log("sceNpManagerGetAccountRegion() failed. ret = 0x%x", ret);
+	}
+    master->Log("[GameService] - GetAccountRegion: %s", m_sceCountryCode.data);
+
+    ret = sceNpManagerGetAccountAge(&m_UserAge);
+	if (ret < 0) {
+		master->Log("sceNpManagerGetAccountAge() failed. ret = 0x%x", ret);
+	}
+    master->Log("[GameService] - GetAccountAge: %d", m_UserAge);
+
+    // TODO:
+    // support sub-signin
+    master->InitServices();
+
+    if (master->GetAchievementSrv())
+        master->GetAchievementSrv()->ReadAchievements(0,0,master->GetAchievementSrv()->GetCountMax());
+
+    m_nNumUsers = 1;
+
+	//InGameBrowsing Init for trial version
+	if(!gi_IsFullVersion)
+	{
+#ifdef INGAMEBROWSING
+		master->GetInGameBrowsingSrv()->Init();
+#else
+		master->GetStoreBrowsingSrv()->Init();
+#endif
+	}
 
     // sign in succeed!
     // register notification when connection status changed
 	ret = sceNpManagerRegisterCallback(NpManagerCallBack, NULL);
 	if (ret < 0) {
-		Master::G()->Log("sceNpManagerRegisterCallback() failed. ret = 0x%x", ret);
+		master->Log("sceNpManagerRegisterCallback() failed. ret = 0x%x", ret);
 	}
 
     // ret = sceNpBasicRegisterContextSensitiveHandler(
@@ -471,75 +549,36 @@ GS_BOOL SignIn::StartNP(GS_BOOL isOnline)
 
 	int npStatus = -2;
 	ret = sceNpManagerGetStatus(&npStatus);
-    if (SCE_NP_MANAGER_STATUS_ONLINE == npStatus)
-    {
-        m_bIsOnline = TRUE;
-    }
     if (ret == 0)
     {
-        Master::G()->Log("[GameService] - sceNpManagerGetStatus: %d", npStatus);
+        m_bIsOnline = FALSE;
+        if (SCE_NP_MANAGER_STATUS_ONLINE == npStatus)
+        {
+            m_bIsOnline = TRUE;
+        }
+
+        master->Log("[GameService] - sceNpManagerGetStatus: %d", npStatus);
     }
-
-	ret = sceNpManagerGetNpId(&m_sceNpID);
-	if (ret < 0) {
-		Master::G()->Log("sceNpManagerGetNpId() failed. ret = 0x%x", ret);
-	}
-
-    Master::G()->Log("[GameService] - GetOnlineId: %s", m_sceNpID.handle.data);
-
-	ret = sceNpManagerGetOnlineName(&m_sceOnlineName);
-	if (ret < 0) {
-		Master::G()->Log("sceNpManagerGetOnlineName() failed. ret = 0x%x", ret);
-	}
-    Master::G()->Log("[GameService] - GetOnlineName: %s", m_sceOnlineName.data);
-
-	ret = sceNpManagerGetAvatarUrl(&m_sceAvatarUrl);
-	if (ret < 0) {
-		Master::G()->Log("sceNpManagerGetAvatarUrl() failed. ret = 0x%x", ret);
-	}
-    Master::G()->Log("[GameService] - GetAvatarUrl: %s", m_sceAvatarUrl.data);
-
-	ret = sceNpManagerGetMyLanguages(&m_sceMyLang);
-	if (ret < 0) {
-		Master::G()->Log("sceNpManagerGetMyLanguages() failed. ret = 0x%x", ret);
-	}
-    Master::G()->Log("[GameService] - GetMyLanguage: %d", m_sceMyLang.language1);
-
-	ret = sceNpManagerGetAccountRegion(&m_sceCountryCode, &m_sceLangCode);
-	if (ret < 0) {
-		Master::G()->Log("sceNpManagerGetAccountRegion() failed. ret = 0x%x", ret);
-	}
-    Master::G()->Log("[GameService] - GetAccountRegion: %s", m_sceCountryCode.data);
-
-    ret = sceNpManagerGetAccountAge(&m_UserAge);
-	if (ret < 0) {
-		Master::G()->Log("sceNpManagerGetAccountAge() failed. ret = 0x%x", ret);
-	}
-    Master::G()->Log("[GameService] - GetAccountAge: %d", m_UserAge);
 
     // NpBasicSendInitPresence();
 
-    // TODO:
-    // support sub-signin
-    Master::G()->InitServices();
+    m_bStarNPInProgress = FALSE;
 
-    if (Master::G()->GetAchievementSrv())
-        Master::G()->GetAchievementSrv()->ReadAchievements(0,0,Master::G()->GetAchievementSrv()->GetCountMax());
-
-    m_nNumUsers = 1;
-
-	//InGameBrowsing Init for trial version
-	if(!gi_IsFullVersion)
-	{
-#ifdef INGAMEBROWSING
-		Master::G()->GetInGameBrowsingSrv()->Init();
-#else
-		Master::G()->GetStoreBrowsingSrv()->Init();
-#endif
-	}
-    return TRUE;
-
+    sys_ppu_thread_exit(0);
 }
+
+GS_BOOL SignIn::GetNPStatus()
+{
+	int npStatus = -2;
+	int ret = sceNpManagerGetStatus(&npStatus);
+    if (ret == 0 && SCE_NP_MANAGER_STATUS_ONLINE == npStatus)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 void SignIn::TermNP()
 {
     // sceNpBasicUnregisterHandler();
@@ -763,7 +802,7 @@ GS_DWORD SignIn::Update()
                                       &m_Overlapped );
 
         if( dwResult != ERROR_IO_PENDING )
-            FatalError( "Failed to invoke message box UI, error %d", dwResult );
+            Master::G()->Log( "Failed to invoke message box UI, error %d", dwResult );
 
         m_bSystemUIShowing = TRUE;
         m_bMessageBoxShowing = TRUE;
@@ -800,7 +839,7 @@ GS_DWORD SignIn::Update()
 
         if( ret != ERROR_SUCCESS )
         {
-            FatalError( "Failed to invoke signin UI, error %d", ret );
+            Master::G()->Log( "Failed to invoke signin UI, error %d", ret );
         }
         else
         {
@@ -817,15 +856,6 @@ GS_DWORD SignIn::Update()
     // handling
 
     cellSysutilCheckCallback();
-
-    // +LCTEST
-    static int s_itest = 0;
-    if (s_itest)
-    {
-        int ret = 0;
-        ret = IsCableConnected();
-    }
-    // -LCTEST
 
     return 0;
 #endif

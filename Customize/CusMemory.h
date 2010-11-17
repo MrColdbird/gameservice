@@ -3,12 +3,6 @@
 
 #pragma once
 
-// trigger the customized memory management
-#ifndef GS_USE_ENGINE_MEMORY_SCHEME
-#define GS_USE_ENGINE_MEMORY_SCHEME 1
-#endif
-
-
 void* operator new(size_t size, GameService::GS_MemoryOP type);
 
 void* operator new[](size_t size, GameService::GS_MemoryOP type);
@@ -42,6 +36,8 @@ GS_VOID DeleteThis(T* ptr)
         Free(ptr);
     }
 }
+
+GS_VOID Assert();
 
 } // namespace
 
