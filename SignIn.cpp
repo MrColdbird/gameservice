@@ -290,9 +290,6 @@ void SignIn::SignInNP()
 
 GS_BOOL SignIn::CheckConnection()
 {
-#if !defined(_FINAL_RELEASE_)
-	TimeCheck t = TimeCheck("CheckConnection");
-#endif
 	struct CellNetCtlNetStartDialogParam param;
 	GS_INT ret = -1;
 	ret = cellSysutilRegisterCallback(m_iCheckConnectionSlot, SignIn::NetSysUtilCbInternal, NULL);
@@ -437,10 +434,6 @@ GS_BOOL SignIn::StartNP()
 
 void SignIn::PS3_StartNP_Thread(uint64_t instance)
 {
-#if !defined(_FINAL_RELEASE_)
-	TimeCheck t = TimeCheck("StartNP");
-#endif
-
     Master* master = (Master*)instance;
 
     GS_INT ret = -1;
