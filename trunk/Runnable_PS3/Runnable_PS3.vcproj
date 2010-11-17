@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="Runnable_PS3"
+	ProjectGUID="{17FB8DC3-F44B-4A99-A137-B4902115045B}"
+	RootNamespace="Runnable_PS3"
+	TargetFrameworkVersion="131072"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="PS3 Debug|Win32"
+			OutputDirectory="PS3_PPU_Debug"
+			IntermediateDirectory="PS3_PPU_Debug"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			DeleteExtensionsOnClean="*.obj;*.d;*.map;*.lst;*.pch;$(TargetPath);$(TargetDir)$(TargetName).self"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="-g -Wall -fno-exceptions -fno-rtti"
+				AdditionalIncludeDirectories="&quot;$(SN_PS3_PATH)\ppu\include\sn&quot;;&quot;$(SCE_PS3_ROOT)\target\ppu\include&quot;;&quot;$(SCE_PS3_ROOT)\target\common\include&quot;;..\..\..\gcmutil"
+				PreprocessorDefinitions="SN_TARGET_PS3;_DEBUG;__GCC__;_PS3"
+				ProgramDataBaseFileName=""
+				CompileAs="0"
+				ForcedUsingFiles="?DbgSaveProj ?DbgFilePath=$(ProjectDir)$(TargetName).self ?FileServDir=$(ProjectDir) ?HomeDir=$(ProjectDir)"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="-fno-exceptions -fno-rtti"
+				AdditionalDependencies="&quot;$(SN_PS3_PATH)\ppu\lib\sn\libsn.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libm.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libio_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libfs_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsysutil_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libaudio_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsync_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libcgc.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libcgb.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libgcm_cmddbg.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libgcm_sys_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libspurs_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsysmodule_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsysutil_np_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libnet_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libnetctl_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsysutil_np_trophy_stub.a&quot; &quot;../OSDK/RendezVous/ps3/lib/libDDLTypesd.a&quot; &quot;../OSDK/RendezVous/ps3/lib/libOnlineCored.a&quot; &quot;../OSDK/RendezVous/ps3/lib/libRendezVousClientd.a&quot; &quot;../OSDK/RendezVous/ps3/lib/libTrackingd.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsysutil_game_stub.a&quot; -lsysutil_np_commerce2_stub -lhttp_stub -lssl_stub -lm -lio_stub -lstdc++ -lsysutil_stub -lgcm_cmd -lgcm_sys_stub -lsysmodule_stub -ldbgfont_gcm -lpadfilter -lfs_stub -lspurs_stub -lcgb"
+				OutputFile="$(ProjectDir)/$(ProjectName).ppu.elf"
+				AdditionalLibraryDirectories=""
+				ProgramDatabaseFile=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Fake Signing ELF &quot;$(TargetDir)$(TargetName).self&quot;"
+				CommandLine="$(SCE_PS3_ROOT)\host-win32\bin\make_fself &quot;$(TargetPath)&quot; &quot;$(TargetDir)$(TargetName).self&quot;"
+			/>
+		</Configuration>
+		<Configuration
+			Name="PS3 Release|Win32"
+			OutputDirectory="PS3_PPU_Release"
+			IntermediateDirectory="PS3_PPU_Release"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			DeleteExtensionsOnClean="*.obj;*.d;*.map;*.lst;*.pch;$(TargetPath);$(TargetDir)$(TargetName).self"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="-Wall -fno-exceptions -fno-rtti -O2"
+				AdditionalIncludeDirectories="&quot;$(SN_PS3_PATH)\ppu\include\sn&quot;;&quot;$(SCE_PS3_ROOT)\target\ppu\include&quot;;&quot;$(SCE_PS3_ROOT)\target\common\include&quot;;..\..\..\gcmutil"
+				PreprocessorDefinitions="SN_TARGET_PS3;NDEBUG;__GCC__;_PS3"
+				ProgramDataBaseFileName=""
+				CompileAs="0"
+				ForcedUsingFiles="?DbgSaveProj ?DbgFilePath=$(ProjectDir)$(TargetName).self ?FileServDir=$(ProjectDir) ?HomeDir=$(ProjectDir)"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="-fno-exceptions -fno-rtti"
+				AdditionalDependencies="&quot;$(SN_PS3_PATH)\ppu\lib\sn\libsn.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libm.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libio_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libfs_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsysutil_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libaudio_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsync_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libcgb.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libgcm_cmd.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libgcm_sys_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libspurs_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsysmodule_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsysutil_np_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libnet_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libnetctl_stub.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsysutil_np_trophy_stub.a&quot; &quot;../OSDK/RendezVous/ps3/lib/libDDLTypest.a&quot; &quot;../OSDK/RendezVous/ps3/lib/libOnlineCoret.a&quot; &quot;../OSDK/RendezVous/ps3/lib/libRendezVousClientt.a&quot; &quot;../OSDK/RendezVous/ps3/lib/libTrackingt.a&quot; &quot;$(SCE_PS3_ROOT)\target\ppu\lib\libsysutil_game_stub.a&quot; -lsysutil_np_commerce2_stub -lhttp_stub -lssl_stub -lm -lio_stub -lstdc++ -lsysutil_stub -lgcm_cmd -lgcm_sys_stub -lsysmodule_stub -ldbgfont_gcm -lpadfilter -lfs_stub -lspurs_stub -lcgb"
+				OutputFile="$(ProjectDir)/$(ProjectName).ppu.elf"
+				AdditionalLibraryDirectories=""
+				ProgramDatabaseFile=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Fake Signing ELF &quot;$(TargetDir)$(TargetName).self&quot;"
+				CommandLine="$(SCE_PS3_ROOT)\host-win32\bin\make_fself &quot;$(TargetPath)&quot; &quot;$(TargetDir)$(TargetName).self&quot;"
+			/>
+		</Configuration>
+		<Configuration
+			Name="PS3 SNC Debug|Win32"
+			OutputDirectory="PS3_PPU_Debug_SNC"
+			IntermediateDirectory="PS3_PPU_Debug_SNC"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			DeleteExtensionsOnClean="*.obj;*.d;*.map;*.lst;*.pch;$(TargetPath);$(TargetDir)$(TargetName).self"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="-g  -Xc-=exceptions -Xc-=rtti"
+				AdditionalIncludeDirectories="&quot;$(SN_PS3_PATH)\ppu\include\sn&quot;;&quot;$(SCE_PS3_ROOT)\target\ppu\include&quot;;&quot;$(SCE_PS3_ROOT)\target\common\include&quot;;..\..\..\gcmutil"
+				PreprocessorDefinitions="SN_TARGET_PS3;_DEBUG;__SNC__;_VSI_ALTCONF_=&quot;PS3 Debug|Win32&quot;;_PS3"
+				ProgramDataBaseFileName=""
+				CompileAs="0"
+				ForcedUsingFiles="?DbgSaveProj ?DbgFilePath=$(ProjectDir)$(TargetName).self ?FileServDir=$(ProjectDir) ?HomeDir=$(ProjectDir)"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="-no-exceptions  -oformat=fself"
+				AdditionalDependencies="&quot;$(SN_PS3_PATH)\ppu\lib\sn\libsn.a&quot; -lm -lio_stub -lstdc++ -lsysutil_stub -lgcm_cmd -lgcm_sys_stub -lsysmodule_stub -ldbgfont_gcm -lpadfilter -lfs_stub -lspurs_stub -lcgb"
+				OutputFile="$(ProjectDir)/$(ProjectName).ppu.self"
+				AdditionalLibraryDirectories=""
+				ProgramDatabaseFile=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="PS3 SNC Release|Win32"
+			OutputDirectory="PS3_PPU_Release_SNC"
+			IntermediateDirectory="PS3_PPU_Release_SNC"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			DeleteExtensionsOnClean="*.obj;*.d;*.map;*.lst;*.pch;$(TargetPath);$(TargetDir)$(TargetName).self"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="-Xc-=exceptions -Xc-=rtti -O2"
+				AdditionalIncludeDirectories="&quot;$(SN_PS3_PATH)\ppu\include\sn&quot;;&quot;$(SCE_PS3_ROOT)\target\ppu\include&quot;;&quot;$(SCE_PS3_ROOT)\target\common\include&quot;;..\..\..\gcmutil"
+				PreprocessorDefinitions="SN_TARGET_PS3;NDEBUG;__SNC__;_VSI_ALTCONF_=&quot;PS3 Release|Win32&quot;;_PS3"
+				ProgramDataBaseFileName=""
+				CompileAs="0"
+				ForcedUsingFiles="?DbgSaveProj ?DbgFilePath=$(ProjectDir)$(TargetName).self ?FileServDir=$(ProjectDir) ?HomeDir=$(ProjectDir)"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="-no-exceptions  -oformat=fself"
+				AdditionalDependencies="&quot;$(SN_PS3_PATH)\ppu\lib\sn\libsn.a&quot; -lm -lio_stub -lstdc++ -lsysutil_stub -lgcm_cmd -lgcm_sys_stub -lsysmodule_stub -ldbgfont_gcm -lpadfilter -lfs_stub -lspurs_stub -lcgb"
+				OutputFile="$(ProjectDir)/$(ProjectName).ppu.self"
+				AdditionalLibraryDirectories=""
+				ProgramDatabaseFile=""
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cxx;cc;s;asm"
+			>
+			<File
+				RelativePath=".\main.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp"
+			>
+		</Filter>
+		<Filter
+			Name="Cg Files"
+			>
+			<File
+				RelativePath=".\fs_basic.cg"
+				>
+				<FileConfiguration
+					Name="PS3 Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_fp_rsx -o &quot;$(InputName).fpo&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -semantic -param -varying -sampler &quot;$(InputName).fpo&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcdisasm &quot;$(InputName).fpo&quot; -o &quot;$(InputName)_asm.txt&quot;&#x0D;&#x0A;&#x0D;&#x0A;"
+						Outputs="$(InputName).fpo;$(InputName)_asm.txt"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="PS3 Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_fp_rsx -o &quot;$(InputName).fpo&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -semantic -param -varying -sampler &quot;$(InputName).fpo&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcdisasm &quot;$(InputName).fpo&quot; -o &quot;$(InputName)_asm.txt&quot;&#x0D;&#x0A;&#x0D;&#x0A;"
+						Outputs="$(InputName).fpo;$(InputName)_asm.txt"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="PS3 SNC Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_fp_rsx -o &quot;$(InputName).fpo&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -semantic -param -varying -sampler &quot;$(InputName).fpo&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcdisasm &quot;$(InputName).fpo&quot; -o &quot;$(InputName)_asm.txt&quot;&#x0D;&#x0A;&#x0D;&#x0A;"
+						Outputs="$(InputName).fpo;$(InputName)_asm.txt"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="PS3 SNC Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_fp_rsx -o &quot;$(InputName).fpo&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -semantic -param -varying -sampler &quot;$(InputName).fpo&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcdisasm &quot;$(InputName).fpo&quot; -o &quot;$(InputName)_asm.txt&quot;&#x0D;&#x0A;&#x0D;&#x0A;"
+						Outputs="$(InputName).fpo;$(InputName)_asm.txt"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="PS3 Debug SDK|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_fp_rsx -o &quot;$(InputName).fpo&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_fp_rsx -o &quot;$(InputName)_normal.fpo&quot; -DNORMAL &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_fp_rsx -o &quot;$(InputName)_basic_shadow_pass1.fpo&quot; -DBASIC_SHADOW_PASS1 &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_fp_rsx -o &quot;$(InputName)_basic_shadow_pass2.fpo&quot; -DBASIC_SHADOW_PASS2 &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_fp_rsx -o &quot;$(InputName)_branch.fpo&quot; -DBRANCH &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -semantic -param -varying -sampler &quot;$(InputName).fpo&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -semantic -param -varying -sampler &quot;$(InputName)_normal.fpo&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -semantic -param -varying -sampler &quot;$(InputName)_basic_shadow_pass1.fpo&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -semantic -param -varying -sampler &quot;$(InputName)_basic_shadow_pass2.fpo&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -semantic -param -varying -sampler &quot;$(InputName)_branch.fpo&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcdisasm &quot;$(InputName).fpo&quot; -o &quot;$(InputName)_asm.txt&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcdisasm &quot;$(InputName)_normal.fpo&quot; -o &quot;$(InputName)_normal_asm.txt&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcdisasm &quot;$(InputName)_basic_shadow_pass1.fpo&quot; -o &quot;$(InputName)_basic_shadow_pass1_asm.txt&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcdisasm &quot;$(InputName)_basic_shadow_pass2.fpo&quot; -o &quot;$(InputName)_basic_shadow_pass2_asm.txt&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcdisasm &quot;$(InputName)_branch.fpo&quot; -o &quot;$(InputName)_branch_asm.txt&quot;&#x0D;&#x0A;"
+						Outputs="$(InputName).fpo;$(InputName)_normal.fpo;$(InputName)_basic_shadow_pass1.fpo;$(InputName)_basic_shadow_pass2.fpo;$(InputName)_branch.fpo;$(InputName)_asm.txt;$(InputName)_normal_asm.txt;$(InputName)_basic_shadow_pass1_asm.txt;$(InputName)_basic_shadow_pass2_asm.txt;$(InputName)_branch_asm.txt"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\vs_basic.cg"
+				>
+				<FileConfiguration
+					Name="PS3 Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_vp_rsx -o &quot;$(InputName).vpo&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -param -varying -nodefault -sampler &quot;$(InputName).vpo&quot;&#x0D;&#x0A;"
+						Outputs="$(InputName).vpo"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="PS3 Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_vp_rsx -o &quot;$(InputName).vpo&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -param -varying -nodefault -sampler &quot;$(InputName).vpo&quot;&#x0D;&#x0A;"
+						Outputs="$(InputName).vpo"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="PS3 SNC Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_vp_rsx -o &quot;$(InputName).vpo&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -param -varying -nodefault -sampler &quot;$(InputName).vpo&quot;&#x0D;&#x0A;"
+						Outputs="$(InputName).vpo"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="PS3 SNC Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_vp_rsx -o &quot;$(InputName).vpo&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -param -varying -nodefault -sampler &quot;$(InputName).vpo&quot;&#x0D;&#x0A;"
+						Outputs="$(InputName).vpo"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="PS3 Debug SDK|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgc -quiet -profile sce_vp_rsx -o &quot;$(InputName).vpo&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;$(SCE_PS3_ROOT)\host-win32\Cg\bin\sce-cgcstrip -param -varying -nodefault -sampler &quot;$(InputName).vpo&quot;&#x0D;&#x0A;"
+						Outputs="$(InputName).vpo"
+					/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

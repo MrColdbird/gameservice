@@ -1,0 +1,18 @@
+2010.11.16-17:45:11	GameService Master Waiting for initialization.
+2010.11.16-17:45:12	sceNpManagerGetNpId() failed. ret = 0x8002aa0a
+2010.11.16-17:45:12	[GameService] - GetOnlineId: 
+2010.11.16-17:45:12	sceNpManagerGetOnlineName() failed. ret = 0x8002aa0a
+2010.11.16-17:45:12	[GameService] - GetOnlineName: 
+2010.11.16-17:45:12	sceNpManagerGetAvatarUrl() failed. ret = 0x8002aa0a
+2010.11.16-17:45:12	[GameService] - GetAvatarUrl: 
+2010.11.16-17:45:12	sceNpManagerGetMyLanguages() failed. ret = 0x8002aa0a
+2010.11.16-17:45:12	[GameService] - GetMyLanguage: 0
+2010.11.16-17:45:12	sceNpManagerGetAccountRegion() failed. ret = 0x8002aa0a
+2010.11.16-17:45:12	[GameService] - GetAccountRegion: 
+2010.11.16-17:45:12	sceNpManagerGetAccountAge() failed. ret = 0x8002aa0a
+2010.11.16-17:45:12	[GameService] - GetAccountAge: 0
+2010.11.16-17:45:12	sceNpTrophyGetRequiredDiskSpace() failed. ret = 0x8002291b
+2010.11.16-17:45:12	sceNpBasicGetFriendListEntryCount() failed. ret = 0x8002aa0a
+2010.11.16-17:45:12	GameService Master Initialized.
+2010.11.16-17:45:12	[GameService] - sceNpManagerGetStatus: 0
+2010.11.16-17:45:13	<MANAGER CB> event:1, result:0x0

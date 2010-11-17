@@ -91,8 +91,8 @@ void FatalError( const char* strFormat, ... )
 {
 #ifdef _DEBUG
     va_list pArgList;
-    va_start( pArgList, format );
-    printf( format, pArgList );
+    va_start( pArgList, strFormat );
+    printf( strFormat, pArgList );
     va_end( pArgList );
 
     Assert();
