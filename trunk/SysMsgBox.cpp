@@ -24,7 +24,7 @@ namespace GameService
 #define CMD_STACKSIZE		(64*1024)
 void thr_GameContentNoSpaceErrorDialog(GS_UINT64 arg)
 {
-    cellGameContentErrorDialog(CELL_GAME_ERRDIALOG_NOSPACE_EXIT, (int)(arg/1024+2), NULL);
+    cellGameContentErrorDialog(CELL_GAME_ERRDIALOG_NOSPACE_EXIT, (int)(arg), NULL);
     sys_ppu_thread_exit(0);
 }
 #endif
@@ -59,9 +59,30 @@ void SysMsgBoxManager::Display(GS_INT mode, void* exdata1)
     // localize according to System Language setting
     switch(m_eMode)
     {
-	case EMODE_KeyFileCorrupted:
+		case EMODE_KeyFileCorrupted:
 		{
-	        sprintf(m_cSysMsgStr[m_eMode], "Your Key File is Corrupted, Please ReInstall It.");
+	        switch(GS_GetSystemLanguage())
+            {
+            default:
+            case GS_ELang_English:
+                strcpy(m_cSysMsgStr[m_eMode],"Your key file is corrupted, please choose 'Unlock Full Game' again to get the full version.");
+                break;
+            case GS_ELang_French:
+                strcpy(m_cSysMsgStr[m_eMode],"Le fichier principal est corrompu, veuillez choisir 'D\xc3\xa9verrouiller le jeu complet' \xc3\xa0 nouveau pour r\xc3\xa9\1cup\xc3\xa9rer la version compl\xc3\xa8te.");
+                break;
+            case GS_ELang_German:
+                strcpy(m_cSysMsgStr[m_eMode],"Ihre Schl\xc3\xbcsseldatei ist besch\xe4\1digt. Bitte w\xc3\xa4hlen Sie erneut 'Vollspiel freischalten', um die Komplettversion zu erhalten.");
+                break;
+            case GS_ELang_Spanish:
+                strcpy(m_cSysMsgStr[m_eMode],"Tu archivo clave est\xc3\xa1 da\xc3\xb1\1ado. Elige de nuevo 'Desbloquear el juego completo' para conseguir la versi\xc3\xb3n completa.");
+                break;
+            case GS_ELang_Italian:
+                strcpy(m_cSysMsgStr[m_eMode],"Il file chiave \xc3\xa8 corrotto, scegli di nuovo 'Sblocca gioco completo' per attivare la versione completa.");
+                break;
+            case GS_ELang_Dutch:
+                strcpy(m_cSysMsgStr[m_eMode],"De code is beschadigd. Kies opnieuw Volledige game ontgrendelen om de volledige versie te bemachtigen.");
+                break;
+            }
 		}
 		break;
     case EMODE_SaveDataNoSpace:
@@ -209,10 +230,10 @@ void SysMsgBoxManager::Update()
 			ret = cellMsgDialogOpen2( type, m_cSysMsgStr[EMODE_KeyFileCorrupted], CB_Dialog_Global, (void*)this, NULL );
 			if ( ret != CELL_OK ) {
 				if ( ret == (int)CELL_SYSUTIL_ERROR_BUSY ) {
-					DebugOutput( "[GameService] - WARN  : cellMsgDialogOpen2() = 0x%x (CELL_SYSUTIL_ERROR_BUSY) ... Retry.", ret );
+                    Master::G()->Log( "[GameService] - WARN  : cellMsgDialogOpen2() = 0x%x (CELL_SYSUTIL_ERROR_BUSY) ... Retry.", ret );
 					return;
 				}
-				DebugOutput( "ERROR : cellMsgDialogOpen2() = 0x%x", ret );
+				Master::G()->Log( "ERROR : cellMsgDialogOpen2() = 0x%x", ret );
 				return;
 			}
 		}

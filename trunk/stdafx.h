@@ -3,7 +3,7 @@
 // are changed infrequently
 //
 
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
 #include <xtl.h>
 #include <xboxmath.h>
 #include <stdio.h>
@@ -27,3 +27,5 @@
 
 // TODO: reference additional headers your program requires here
 #include "Utils.h"
+#include "Customize/CusMemory.h"
+

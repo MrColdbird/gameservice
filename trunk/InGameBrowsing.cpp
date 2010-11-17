@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #ifdef _PS3
+#include "interface.h"
 #include "master.h"
 #include "InGameBrowsing.h"
 #include <stdlib.h>

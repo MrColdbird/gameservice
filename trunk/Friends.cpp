@@ -6,7 +6,6 @@
 // ======================================================================================
 
 #include "stdafx.h"
-#include "Customize/CusMemory.h"
 #include "Friends.h"
 #include "SignIn.h"
 #include "Master.h"

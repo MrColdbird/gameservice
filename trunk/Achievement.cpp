@@ -6,7 +6,6 @@
 // ======================================================================================
 
 #include "stdafx.h"
-#include "Customize/CusMemory.h"
 #include "Achievement.h"
 #include "SignIn.h"
 #include "Task.h"
@@ -125,6 +124,7 @@ GS_BOOL AchievementSrv::Initialize()
 		Master::G()->Log("sceNpTrophyGetRequiredDiskSpace() failed. ret = 0x%x", ret);
 		return FALSE;
     }
+    m_iTrophySpace /= 1024;
 
     if (m_iFreeSpaceAvailable < 0)
     {
@@ -454,6 +454,8 @@ void AchievementSrv::MessageResponse(Message* message)
 #endif
             m_bHasRead = true;
             break;
+		default:
+			break;
         }
     }
 }

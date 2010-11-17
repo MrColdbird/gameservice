@@ -191,7 +191,9 @@ public:
 	static GS_VOID StorageDeviceReset();
 
 #elif defined(_PS3)
-    static GS_BOOL StartNP(GS_BOOL isOnline);
+    static GS_BOOL StartNP();
+    static GS_BOOL GetNPStatus();
+    static void PS3_StartNP_Thread(uint64_t instance);
     static void TermNP();
     static void SignInNP();
     static GS_BOOL StartNet();
@@ -310,6 +312,7 @@ private:
     static const SceNpCommunicationPassphrase   m_NpPassPhrase;
     static const char                           m_NpServiceID[64];
     static int              m_UserAge;
+    static GS_BOOL          m_bStarNPInProgress;
 #endif
 
 	// Latest SignIn infos

@@ -6,13 +6,80 @@
 // ======================================================================================
 
 #include "stdafx.h"
-#include "Customize/CusMemory.h"
 #include "Task.h"
 #include "Message.h"
 #include "Master.h"
 
 namespace GameService
 {
+
+#define GET_TASKTYPE_NAME(type) \
+case type:\
+strcpy(out, #type);\
+break;
+
+void GetTaskTypeName(GS_TaskType type, GS_CHAR* out)
+{
+    switch(type)
+    {
+    default:
+        strcpy(out, "Unknown TaskType");
+        break;
+    GET_TASKTYPE_NAME(EGSTaskType_ShowKeyboard_SetCustomizeMotto)
+    GET_TASKTYPE_NAME(EGSTaskType_ShowKeyboard_SetReplayName)
+    GET_TASKTYPE_NAME(EGSTaskType_ShowKeyboard_SetClanURL)
+    GET_TASKTYPE_NAME(EGSTaskType_ShowKeyboard_SetClanMessageOfDay)
+    GET_TASKTYPE_NAME(EGSTaskType_SysMsgBox_SaveDataNoFreeSpace)
+    GET_TASKTYPE_NAME(EGSTaskType_SysMsgBox_TrophyNoFreeSpace)
+    GET_TASKTYPE_NAME(EGSTaskType_SysMsgBox_PlayOtherUserSaveData)
+    GET_TASKTYPE_NAME(EGSTaskType_SessionCreate)
+    GET_TASKTYPE_NAME(EGSTaskType_SessionStart)
+    GET_TASKTYPE_NAME(EGSTaskType_SessionJoin)
+    GET_TASKTYPE_NAME(EGSTaskType_SessionEnd)
+    GET_TASKTYPE_NAME(EGSTaskType_SessionLeave)
+    GET_TASKTYPE_NAME(EGSTaskType_SessionDelete)
+    GET_TASKTYPE_NAME(EGSTaskType_StatsRetrieveLocal)
+    GET_TASKTYPE_NAME(EGSTaskType_StatsWrite)
+    GET_TASKTYPE_NAME(EGSTaskType_StatsFlush)
+    GET_TASKTYPE_NAME(EGSTaskType_StatsRead)
+    GET_TASKTYPE_NAME(EGSTaskType_StatsReadFriend)
+    GET_TASKTYPE_NAME(EGSTaskType_XContentCreate)
+    GET_TASKTYPE_NAME(EGSTaskType_XContentClose)
+    GET_TASKTYPE_NAME(EGSTaskType_XContentTestCreate)
+    GET_TASKTYPE_NAME(EGSTaskType_XContentTestClose)
+    GET_TASKTYPE_NAME(EGSTaskType_UnlockAchievement)
+    GET_TASKTYPE_NAME(EGSTaskType_ReadAchievement)
+    GET_TASKTYPE_NAME(EGSTaskType_Test)
+    GET_TASKTYPE_NAME(EGSTaskType_GameClipRankCheck)
+    GET_TASKTYPE_NAME(EGSTaskType_UpdateGameClipSize)
+    GET_TASKTYPE_NAME(EGSTaskType_UploadGameClip)
+    GET_TASKTYPE_NAME(EGSTaskType_DownloadGameClip)
+    GET_TASKTYPE_NAME(EGSTaskType_CheckGameClipInfo)
+    GET_TASKTYPE_NAME(EGSTaskType_ListFriend)
+    GET_TASKTYPE_NAME(EGSTaskType_StorageService_SelectDevice)
+    GET_TASKTYPE_NAME(EGSTaskType_StorageService_Check)
+    GET_TASKTYPE_NAME(EGSTaskType_StorageService_CheckClose)
+    GET_TASKTYPE_NAME(EGSTaskType_StorageService_Read)
+    GET_TASKTYPE_NAME(EGSTaskType_StorageService_ReadClose)
+    GET_TASKTYPE_NAME(EGSTaskType_StorageService_Write)
+    GET_TASKTYPE_NAME(EGSTaskType_StorageService_WriteClose)
+    GET_TASKTYPE_NAME(EGSTaskType_StorageService_Delete)
+    GET_TASKTYPE_NAME(EGSTaskType_Remote_Read)
+    GET_TASKTYPE_NAME(EGSTaskType_Remote_Refresh)
+    GET_TASKTYPE_NAME(EGSTaskType_Remote_Write_Step_I)
+    GET_TASKTYPE_NAME(EGSTaskType_Remote_Write_Step_II)
+    GET_TASKTYPE_NAME(EGSTaskType_Remote_Write_Step_III)
+    GET_TASKTYPE_NAME(EGSTaskType_Remote_Delete)
+    GET_TASKTYPE_NAME(EGSTaskType_ReadProfile)
+    GET_TASKTYPE_NAME(EGSTaskType_WriteProfile)
+    GET_TASKTYPE_NAME(EGSTaskType_HostMigration)
+    GET_TASKTYPE_NAME(EGSTaskType_GetFriendsFactionInfo)
+    GET_TASKTYPE_NAME(EGSTaskType_GetPlayerFriends)
+    GET_TASKTYPE_NAME(EGSTaskType_ViewReplay)
+    GET_TASKTYPE_NAME(EGSTaskType_InputSpecialCode)
+    GET_TASKTYPE_NAME(EGSTaskType_MarketplaceEnumeration)
+    }
+}
 
 Task::Task(CTaskID TaskId
 #if defined(_PS3)
@@ -32,11 +99,15 @@ Task::Task(CTaskID TaskId
 void  Task::Start()
 {
 	m_TaskStarted = TRUE;
-#ifdef _XBOX
+#if defined(_XBOX) || defined(_XENON)
 	m_TaskResult = ERROR_IO_INCOMPLETE;
 #elif PS3
 	m_TaskResult = 0; // TO DO ...
 #endif
+
+    // get TaskType string for log
+    GetTaskTypeName(GetTaskType(),m_cTypeName);
+    Master::G()->Log("Task Started - %s", m_cTypeName);
 }
 void  Task::Stop()
 {
@@ -65,6 +136,9 @@ GS_BOOL Task::Update()
     case EGSTaskType_StatsRead:
     case EGSTaskType_StatsReadFriend:
         bExecuting = sceNpScorePollAsync(m_sceTransId, &DetailedResult);
+		break;
+	default:
+		FatalError("Cannot do task for type: %d\n", GetTaskType());
         break;
     }
 
@@ -98,7 +172,7 @@ GS_BOOL Task::Update()
 	if(GetTaskType() < EGSTaskType_ShowXUI_Max)
 	{
 		// TODO:
-		assert(0);
+		Assert();
 
 //		if(!((OfOnlineService *)GEngine->OnlineService)->GetNotificationHandler()->IsDashBoardUsed())
 //		{
@@ -142,11 +216,9 @@ GS_BOOL Task::Update()
 	{
 		if (m_TaskRecipient)
 			message = Message::Create(EMessage_OnlineTaskDone);
-		//message->AddPayload(CTaskID);
-		//OnlineMessageMgr::Get()->Send(message);
-		//m_TaskFinished = TRUE;
-		//return TRUE;
 	}
+
+    Master::G()->Log("Task Finished - %s with %x", m_cTypeName, m_TaskResult);
 
 	/*Message Payload
 	0. task_id CTaskID
@@ -185,10 +257,10 @@ void Task::Cancel()
     // AbortTransaction according to different API
 	if( m_TaskStarted )
 	{
-		Delete<Task>(this);
+		DeleteThis<Task>(this);
 	}
 #endif
-#ifdef _XBOX
+#if defined(_XBOX) || defined(_XENON)
 	if (m_TaskStarted && !XHasOverlappedIoCompleted(&m_XOverlapped))
 	{
 		GS_DWORD errcode = XCancelOverlapped(&m_XOverlapped);
@@ -265,7 +337,7 @@ CTaskID TaskMgr::GenerateTaskID(GS_TaskType taskType, GS_BYTE pos)
 	return ( pos | ((taskType&0xFF) << 8) | ((m_Generator&0xFFFF) << 16) );
 }
 
-#ifdef _XBOX
+#if defined(_XBOX) || defined(_XENON)
 PXOVERLAPPED TaskMgr::AddTask(GS_TaskType taskType, MessageRecipient* taskRecipient, CTaskID* taskId)
 {
 	if(taskType <= EGSTaskType_InValid || taskType >= ONLINE_TASK_TYPE_NUM)
@@ -373,7 +445,7 @@ void TaskMgr::CancelTask(CTaskID taskId)
 	}
 }
 
-#ifdef _XBOX
+#if defined(_XBOX) || defined(_XENON)
 XOVERLAPPED* TaskMgr::GetTaskXOverlapped(CTaskID taskId)
 {
 	UINT8 pos = GetPosInTaskArray(taskId);

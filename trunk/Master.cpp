@@ -6,7 +6,6 @@
 // ======================================================================================
 
 #include "stdafx.h"
-#include "Customize/CusMemory.h"
 #include "SignIn.h"
 #include "Task.h"
 #include "Session.h"
@@ -20,13 +19,13 @@
 #include "OSDK/Tracking/TrackingManager.h"
 #include <RendezVous.h>
 #if defined(_PS3)
-#include "../../Main/MainXenon/Sources/FinalVersionDef.h"
 
 #ifdef INGAMEBROWSING
 #include "InGameBrowsing.h"
 #else
 #include "StoreBrowsing.h"
 #endif
+
 #endif
 
 namespace GameService
@@ -294,6 +293,7 @@ GS_VOID Master::Update()
 #endif
     if (m_pSysMsgBoxManager)
         m_pSysMsgBoxManager->Update();
+
 #ifdef _PS3
 #ifndef _FINAL_RELEASE_
 	if(t != NULL)

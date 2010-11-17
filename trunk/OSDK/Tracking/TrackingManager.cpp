@@ -71,7 +71,7 @@ GS_BOOL TrackingManager::Initialize()
 
 #elif defined(_PS3)
 
-    if (0 == SignIn::IsUserOnline())
+    if (FALSE == SignIn::GetNPStatus())
     {
         return FALSE;
     }
@@ -106,7 +106,7 @@ GS_VOID TrackingManager::FetchConfig()
     cc.Wait();
     if (QFAILED(cc.GetOutcome().GetReturnCode()))
     {
-        Master::G()->Log("OnlineConfig result: %d", cc.GetOutcome());
+        Master::G()->Log("OnlineConfig result: %d", cc.GetOutcome().GetReturnCode());
     }
 
 #if defined(_XBOX) || defined(_XENON)

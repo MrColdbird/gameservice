@@ -11,7 +11,7 @@
 namespace GameService
 {
 
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
 #define LB_COLUMN_MAX XUSER_STATS_ATTRS_IN_SPEC
 #else
 #define LB_COLUMN_MAX 100 // temp

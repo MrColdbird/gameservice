@@ -1,5 +1,9 @@
 #include "stdafx.h"
-#include "CusMemory.h"
+
+#undef GS_USE_ENGINE_MEMORY_SCHEME
+
+// trigger the customized memory management
+#define GS_USE_ENGINE_MEMORY_SCHEME 1
 
 // ======================================================== 
 // Customize memory allignment here:
@@ -8,6 +12,7 @@
 // ======================================================== 
 #if GS_USE_ENGINE_MEMORY_SCHEME
 #include "BASe/MEMory/MEM.h"
+#endif
 
 void* operator new(size_t size, GameService::GS_MemoryOP type)
 {
@@ -76,8 +81,6 @@ GS_BYTE* Realloc( GS_BYTE* ptr, GS_DWORD size, GS_DWORD oldsize )
 
 	return newptr;
 
-    //return (GS_BYTE*)MEM_p_Realloc(ptr,size);
-
 #else
 	GS_BYTE* ret = NULL;
     if ((ret=(GS_BYTE*)realloc(ptr,size)) == NULL)
@@ -97,6 +100,18 @@ GS_BYTE* Realloc( GS_BYTE* ptr, GS_DWORD size, GS_DWORD oldsize )
     return ret;
 #endif
 }	
+
+GS_VOID Assert()
+{
+#if GS_USE_ENGINE_MEMORY_SCHEME
+    ERR_X_Assert(0);
+#else
+#if defined(_XBOX) || defined(_XENON) || defined(_WINDOWS)
+    DebugBreak();
+#elif defined(_PS3)
+    assert(0);
 #endif
+#endif
+}
 
 } // namespace GameService

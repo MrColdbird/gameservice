@@ -48,7 +48,7 @@
 				Optimization="0"
 				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="..\..\Libraries\SDK\Sources;./OSDK/RendezVous/xenon;&quot;$(projectdir)&quot;"
-				PreprocessorDefinitions="_DEBUG;_XBOX;_LIB_XBOX;XBOX;_XBOX_CRT_DEPRECATE_INSECURE;UBI_XENON;UBI_DEBUG;OSDK_DEBUG_VERSION"
+				PreprocessorDefinitions="_DEBUG;_XBOX;_LIB_XBOX;XBOX;_XBOX_CRT_DEPRECATE_INSECURE;UBI_XENON;UBI_DEBUG;OSDK_DEBUG_VERSION;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="1"
@@ -578,7 +578,7 @@
 				Optimization="3"
 				FavorSizeOrSpeed="2"
 				AdditionalIncludeDirectories="..\..\Libraries\SDK\Sources;./OSDK/RendezVous/xenon;&quot;$(projectdir)&quot;"
-				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;UBI_XENON;OSDK_RELEASE_VERSION;_FINAL_"
+				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;UBI_XENON;OSDK_RELEASE_VERSION;_FINAL_;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="0"
@@ -1091,7 +1091,7 @@
 				Optimization="3"
 				FavorSizeOrSpeed="2"
 				AdditionalIncludeDirectories="..\..\Libraries\SDK\Sources;./OSDK/RendezVous/xenon;&quot;$(projectdir)&quot;"
-				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;UBI_XENON;OSDK_RETAIL_VERSION;_FINAL_;_FINAL_RELEASE_"
+				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;UBI_XENON;OSDK_RETAIL_VERSION;_FINAL_;_CRT_SECURE_NO_WARNINGS;_FINAL_RELEASE_"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="0"
@@ -1276,7 +1276,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-g -Wall -fno-exceptions -fno-rtti"
+				AdditionalOptions="-Wall -fno-exceptions -fno-rtti -O2"
 				AdditionalIncludeDirectories="..\..\Libraries\SDK\Sources;./OSDK/RendezVous/ps3;&quot;$(projectdir)&quot;;&quot;$(SCE_PS3_ROOT)\target\ppu\include\vectormath\cpp&quot;;&quot;$(SCE_PS3_ROOT)\target\ppu\include&quot;"
 				PreprocessorDefinitions="OSDK_RETAIL_VERSION;__GCC__;_PS3;SN_TARGET_PS3;UBI_PS3;NDEBUG;_NDEBUG;RELEASE;_RELEASE;_FINAL_;_FINAL_RELEASE_"
 			/>

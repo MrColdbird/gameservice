@@ -6,7 +6,6 @@
 // ======================================================================================
 
 #include "stdafx.h"
-#include "Customize/CusMemory.h"
 #include "InterfaceMgr.h"
 #include "SignIn.h"
 #include "Task.h"
@@ -25,7 +24,7 @@ SessionSrv::SessionSrv()
 {
 	m_IsCreated = m_IsStarted = FALSE;
 	// Initialize variables
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
     m_hSession = INVALID_HANDLE_VALUE;
 #endif
 }
@@ -34,7 +33,7 @@ SessionSrv::SessionSrv(MessageMgr* msgMgr)
 {
 	m_IsCreated = m_IsStarted = FALSE;
 	// Initialize variables
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
 	m_hSession = INVALID_HANDLE_VALUE;
 #endif
 
@@ -50,7 +49,7 @@ SessionSrv::SessionSrv(MessageMgr* msgMgr)
 //--------------------------------------------------------------------------------------
 GS_BOOL SessionSrv::BeginSession()
 {
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
 	if (m_hSession != INVALID_HANDLE_VALUE)
 		return FALSE;
 
@@ -91,7 +90,7 @@ GS_BOOL SessionSrv::BeginSession()
 //--------------------------------------------------------------------------------------
 GS_BOOL SessionSrv::JoinSession()
 {
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
  	if (m_hSession == INVALID_HANDLE_VALUE)
 		return FALSE;
 
@@ -123,7 +122,7 @@ GS_BOOL SessionSrv::JoinSession()
 //--------------------------------------------------------------------------------------
 GS_BOOL SessionSrv::StartSession()
 {
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
  	if (m_hSession == INVALID_HANDLE_VALUE)
 		return FALSE;
 
@@ -142,8 +141,27 @@ GS_BOOL SessionSrv::StartSession()
 		return FALSE;
     }
 
+    m_iLastWriteStatsInSession = 0;
+
 #endif
     return TRUE;
+}
+
+// ======================================================== 
+// Record last write stats time
+// ======================================================== 
+#define WRITE_STATS_INTERVAL 300000 // 5m
+GS_BOOL SessionSrv::CanWriteStats()
+{
+#if defined(_XBOX) || defined(_XENON)
+    if (0 == m_iLastWriteStatsInSession || GetTickCount() - m_iLastWriteStatsInSession > WRITE_STATS_INTERVAL)
+    {
+        m_iLastWriteStatsInSession = GetTickCount();
+        return TRUE;
+    }
+
+    return FALSE;
+#endif
 }
 
 
@@ -155,7 +173,7 @@ GS_BOOL SessionSrv::EndSession()
 {
     // Master::G()->GetStatsSrv()->Finalize();
 
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
     // Don't end the session if it was never created
     if( m_hSession == INVALID_HANDLE_VALUE )
     {
@@ -186,7 +204,7 @@ GS_BOOL SessionSrv::EndSession()
 //--------------------------------------------------------------------------------------
 GS_BOOL SessionSrv::LeaveSession()
 {
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
     // Don't leave the session if it was never created
     if( m_hSession == INVALID_HANDLE_VALUE )
     {
@@ -218,7 +236,7 @@ GS_BOOL SessionSrv::LeaveSession()
 //--------------------------------------------------------------------------------------
 GS_BOOL SessionSrv::DeleteSession()
 {
-#if defined(_XBOX)
+#if defined(_XBOX) || defined(_XENON)
     // Don't delete the session if it was never created
     if( m_hSession == INVALID_HANDLE_VALUE )
     {
@@ -275,6 +293,8 @@ void SessionSrv::MessageResponse(Message* message)
 #if defined(_XBOX) || defined(_XENON)
 			m_hSession = INVALID_HANDLE_VALUE;
 #endif
+			break;
+		default:
 			break;
 		}
 	}
