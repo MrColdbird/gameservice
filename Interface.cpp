@@ -1,7 +1,7 @@
 // ======================================================================================
 // File         : Interface.cpp
 // Author       : Li Chen 
-// Last Change  : 07/29/2010 | 15:45:38 PM | Thursday,July
+// Last Change  : 11/17/2010 | 11:46:27 AM | Wednesday,November
 // Description  : 
 // ======================================================================================
 
@@ -32,36 +32,36 @@ namespace GameService
 GSCB_Func GS_CallBackFunc[EGSTaskType_MAX];
 
 // Update function
-void GS_Initialize(bool requireOnline, int achieveCount, int versionId, bool bTrial, int bDumpLog
+GS_VOID Initialize(GS_BOOL requireOnline, GS_INT achieveCount, GS_INT versionId, GS_BOOL bTrial, GS_INT bDumpLog
 #if defined(_PS3)
-                   , int iFreeSpaceAvail
+                   , GS_INT iFreeSpaceAvail
 #endif
                    )
 {
-	Master::G()->Initialize(requireOnline==true?1:0, 1, achieveCount, versionId, bTrial==true?1:0, bDumpLog
+	Master::G()->Initialize(requireOnline, 1, achieveCount, versionId, bTrial, bDumpLog
 #if defined(_PS3)
                             , iFreeSpaceAvail
 #endif
                             ); 
 }
-void GS_Update()
+GS_VOID Update()
 {
 	Master::G()->Update();
 }
-void GS_Destroy()
+GS_VOID Destroy()
 {
     Master::G()->Destroy();
 }
 
 // Profile check function
-bool GS_NotifyNoProfileSignedIn()
+GS_BOOL NotifyNoProfileSignedIn()
 {
 #if defined(_XBOX) || defined(_XENON)
 	return SignIn::NotifyNoProfileSignedIn();
 #endif
-	return false;
+	return FALSE;
 }
-int GS_GetSignedInUserCount()
+GS_INT GetSignedInUserCount()
 {
 #if defined(_XBOX) || defined(_XENON)
     return SignIn::GetSignedInUserCount();
@@ -71,24 +71,24 @@ int GS_GetSignedInUserCount()
 #endif
 	return 0;
 }
-void GS_SetBeforePressStart(int before)
+GS_VOID SetBeforePressStart(GS_INT before)
 {
     SignIn::SetBeforePressStart(before);
 }
-int GetBeforePressStart()
+GS_INT GetBeforePressStart()
 {
     return SignIn::GetBeforePressStart();
 }
-void GS_StartGame(int userIndex)
+GS_VOID StartGame(GS_INT userIndex)
 {
     SignIn::StartGame(userIndex);
 }
 #if defined(_PS3)
-int GS_GetUserAge()
+GS_INT GetUserAge()
 {
     return SignIn::GetUserAge();
 }
-int GS_GetUserLanguage()
+GS_INT GetUserLanguage()
 {
     switch(SignIn::GetLanguage().language1)
     {
@@ -131,7 +131,7 @@ int GS_GetUserLanguage()
 }
 #endif
 
-int GS_GetSystemLanguage()
+GS_INT GetSystemLanguage()
 {
 #if defined(_XBOX) || defined(_XENON)
 	switch(XGetLanguage())
@@ -172,7 +172,7 @@ int GS_GetSystemLanguage()
     }
 
 #elif defined(_PS3)
-    int language;
+    GS_INT language;
 
     if( cellSysutilGetSystemParamInt(CELL_SYSUTIL_SYSTEMPARAM_ID_LANG, &language) < 0 ) 
     {
@@ -220,7 +220,7 @@ int GS_GetSystemLanguage()
 #endif
 }
 
-int IsCableConnected()
+GS_INT IsCableConnected()
 {
 #if defined(_XBOX) || defined(_XENON)
     return 1;
@@ -230,7 +230,7 @@ int IsCableConnected()
     return 1;
 }
 
-void RequestSignIn()
+GS_VOID RequestSignIn()
 {
 #if defined(_XBOX) || defined(_XENON)
     SignIn::ShowSignInUI();
@@ -240,7 +240,7 @@ void RequestSignIn()
 }
 
 // Leaderboard function:
-void GS_RetrieveLocalStats(int immediately, int boardId, int columnNum, int* columnIds, GSCB_Func fun_cb)
+GS_VOID RetrieveLocalStats(GS_INT immediately, GS_INT boardId, GS_INT columnNum, GS_INT* columnIds, GSCB_Func fun_cb)
 {
     if (!Master::G()->GetStatsSrv())
         return;
@@ -253,46 +253,46 @@ void GS_RetrieveLocalStats(int immediately, int boardId, int columnNum, int* col
 	GS_CallBackFunc[EGSTaskType_StatsRetrieveLocal] = fun_cb;
 	Master::G()->GetStatsSrv()->RetrieveLocalUserStats(immediately);
 }
-int GS_ReadLeaderboardFinished()
+GS_INT ReadLeaderboardFinished()
 {
     return !( Master::G()->GetStatsSrv()->IsReadingLeaderboard() );
 }
-int GS_GetLeaderboardCount()
+GS_INT GetLeaderboardCount()
 {
     return Master::G()->GetStatsSrv()->GetRetrievedCount();
 }
-char* GS_GetLeaderboardName(int index)
+char* GetLeaderboardName(GS_INT index)
 {
     return Master::G()->GetStatsSrv()->GetRetrievedName(index);
 }
-int GS_GetLeaderboardRank(int index)
+GS_INT GetLeaderboardRank(GS_INT index)
 {
     return Master::G()->GetStatsSrv()->GetRetrievedRank(index);
 }
-int GS_GetLeaderboardScore(int index)
+GS_INT GetLeaderboardScore(GS_INT index)
 {
     return Master::G()->GetStatsSrv()->GetRetrievedScore(index);
 }
-int GetStatsErrorCode()
+GS_INT GetStatsErrorCode()
 {
 	return Master::G()->GetStatsSrv()->GetErrorCode();
 }
 #if defined(_XBOX) || defined(_XENON)
-ULONGLONG GS_GetKeyValueFromStats(int lbIndex)
+ULONGLONG GetKeyValueFromStats(GS_INT lbIndex)
 {
     if (!Master::G()->GetStatsSrv())
         return 0;
 
 	return Master::G()->GetStatsSrv()->GetLocalStats_Key(0,lbIndex);
 }
-bool GS_CanWriteStats()
+GS_BOOL CanWriteStats()
 {
     if (!Master::G()->GetStatsSrv())
-        return false;
+        return FALSE;
 
-	return (Master::G()->GetStatsSrv()->CanWriteStats() == TRUE) ? true : false;
+	return Master::G()->GetStatsSrv()->CanWriteStats();
 }
-void GS_WriteStats(GSCB_Func fun_cb, int lbNum, XSESSION_VIEW_PROPERTIES* views)
+GS_VOID WriteStats(GSCB_Func fun_cb, GS_INT lbNum, XSESSION_VIEW_PROPERTIES* views)
 {
     if (!Master::G()->GetStatsSrv())
         return;
@@ -301,7 +301,7 @@ void GS_WriteStats(GSCB_Func fun_cb, int lbNum, XSESSION_VIEW_PROPERTIES* views)
 	Master::G()->GetStatsSrv()->WriteLeaderboard(SignIn::GetActiveUserIndex()); // always the first user
 	GS_CallBackFunc[EGSTaskType_StatsWrite] = fun_cb;
 }
-void GS_FlushStats(GSCB_Func fun_cb)
+GS_VOID FlushStats(GSCB_Func fun_cb)
 {
     if (!Master::G()->GetStatsSrv())
         return;
@@ -309,16 +309,16 @@ void GS_FlushStats(GSCB_Func fun_cb)
 	Master::G()->GetStatsSrv()->FlushLeaderboard();
 	GS_CallBackFunc[EGSTaskType_StatsFlush] = fun_cb;
 }
-bool GS_ReadStats(int boardId, int columnNum, int* columnIds, int rankIdx, int userIndex, int maxRowNum, int myScoreOffset, GSCB_Func fun_cb)
+GS_BOOL ReadStats(GS_INT boardId, GS_INT columnNum, GS_INT* columnIds, GS_INT rankIdx, GS_INT userIndex, GS_INT maxRowNum, GS_INT myScoreOffset, GSCB_Func fun_cb)
 {
     if (!Master::G()->GetStatsSrv())
         return FALSE;
 
 	Master::G()->GetStatsSrv()->GetLBDef().Set(boardId,columnNum,columnIds);
 	GS_CallBackFunc[EGSTaskType_StatsRead] = fun_cb;
-	return Master::G()->GetStatsSrv()->ReadLeaderboard(rankIdx, userIndex, maxRowNum, myScoreOffset) == 1 ? true : false;
+	return Master::G()->GetStatsSrv()->ReadLeaderboard(rankIdx, userIndex, maxRowNum, myScoreOffset);
 }
-bool GS_ReadFriendsStats(int boardId, int columnNum, int* columnIds, int rankIdx, int userIndex, int maxRowNum, GSCB_Func fun_cb)
+GS_BOOL ReadFriendsStats(GS_INT boardId, GS_INT columnNum, GS_INT* columnIds, GS_INT rankIdx, GS_INT userIndex, GS_INT maxRowNum, GSCB_Func fun_cb)
 {
     if (!Master::G()->GetStatsSrv())
         return FALSE;
@@ -326,17 +326,17 @@ bool GS_ReadFriendsStats(int boardId, int columnNum, int* columnIds, int rankIdx
 	Master::G()->GetStatsSrv()->GetLBDef().Set(boardId,columnNum,columnIds);
 	GS_CallBackFunc[EGSTaskType_StatsRead] = fun_cb;
 	userIndex = SignIn::GetActiveUserIndex();
-	return Master::G()->GetStatsSrv()->ReadFriendsLeaderboard(rankIdx, userIndex, maxRowNum) == 1 ? true : false;
+	return Master::G()->GetStatsSrv()->ReadFriendsLeaderboard(rankIdx, userIndex, maxRowNum);
 }
 #elif defined(_PS3)
-int GS_GetKeyValueFromStats(int lbIndex)
+GS_INT GetKeyValueFromStats(GS_INT lbIndex)
 {
     if (!Master::G()->GetStatsSrv())
         return 0;
 
 	return Master::G()->GetStatsSrv()->GetLocalStats_Key(0,lbIndex);
 }
-void GS_WriteStats(GSCB_Func fun_cb, int iLBId, int score)
+GS_VOID WriteStats(GSCB_Func fun_cb, GS_INT iLBId, GS_INT score)
 {
     if (!Master::G()->GetStatsSrv())
         return;
@@ -345,7 +345,7 @@ void GS_WriteStats(GSCB_Func fun_cb, int iLBId, int score)
 	GS_CallBackFunc[EGSTaskType_StatsRead] = fun_cb;
     Master::G()->GetStatsSrv()->WriteLeaderboard(0);
 }
-bool GS_ReadStats(int boardId, int score, int rankIdx, int userIndex, int maxRowNum, int myScoreOffset, GSCB_Func fun_cb)
+GS_BOOL ReadStats(GS_INT boardId, GS_INT score, GS_INT rankIdx, GS_INT userIndex, GS_INT maxRowNum, GS_INT myScoreOffset, GSCB_Func fun_cb)
 {
     if (!Master::G()->GetStatsSrv())
         return FALSE;
@@ -354,7 +354,7 @@ bool GS_ReadStats(int boardId, int score, int rankIdx, int userIndex, int maxRow
 	GS_CallBackFunc[EGSTaskType_StatsRead] = fun_cb;
 	return Master::G()->GetStatsSrv()->ReadLeaderboard(rankIdx, userIndex, maxRowNum, myScoreOffset);
 }
-bool GS_ReadFriendsStats(int boardId, int score, int rankIdx, int userIndex, int maxRowNum, GSCB_Func fun_cb)
+GS_BOOL ReadFriendsStats(GS_INT boardId, GS_INT score, GS_INT rankIdx, GS_INT userIndex, GS_INT maxRowNum, GSCB_Func fun_cb)
 {
     if (!Master::G()->GetStatsSrv())
         return FALSE;
@@ -364,14 +364,14 @@ bool GS_ReadFriendsStats(int boardId, int score, int rankIdx, int userIndex, int
 	return Master::G()->GetStatsSrv()->ReadFriendsLeaderboard(rankIdx, userIndex, maxRowNum);
 }
 #endif
-void GS_DebugOutputStats()
+GS_VOID DebugOutputStats()
 {
     if (!Master::G()->GetStatsSrv())
         return;
 
 	Master::G()->GetStatsSrv()->DebugOutputLeaderboard();
 }
-void GS_ShowGamerCard(int index)
+GS_VOID ShowGamerCard(GS_INT index)
 {
     if (!Master::G()->GetStatsSrv())
         return;
@@ -380,7 +380,7 @@ void GS_ShowGamerCard(int index)
 }
 
 // Session Service
-void GS_CreateSession(GSCB_Func fun_cb)
+GS_VOID CreateSession(GSCB_Func fun_cb)
 {
     if (!Master::G()->GetSessionSrv())
         return;
@@ -388,7 +388,7 @@ void GS_CreateSession(GSCB_Func fun_cb)
 	GS_CallBackFunc[EGSTaskType_SessionCreate] = fun_cb;
 	Master::G()->GetSessionSrv()->BeginSession();
 }
-void GS_JoinSession(GSCB_Func fun_cb)
+GS_VOID JoinSession(GSCB_Func fun_cb)
 {
     if (!Master::G()->GetSessionSrv())
         return;
@@ -396,14 +396,14 @@ void GS_JoinSession(GSCB_Func fun_cb)
 	GS_CallBackFunc[EGSTaskType_SessionJoin] = fun_cb;
 	Master::G()->GetSessionSrv()->JoinSession();
 }
-bool GS_IsSessionCreated()
+GS_BOOL IsSessionCreated()
 {
     if (!Master::G()->GetSessionSrv())
-        return false;
+        return FALSE;
 
-	return Master::G()->GetSessionSrv()->IsCreated()==TRUE ? true : false;
+	return Master::G()->GetSessionSrv()->IsCreated();
 }
-void GS_StartSession(GSCB_Func fun_cb)
+GS_VOID StartSession(GSCB_Func fun_cb)
 {
     if (!Master::G()->GetSessionSrv())
         return;
@@ -411,14 +411,14 @@ void GS_StartSession(GSCB_Func fun_cb)
 	GS_CallBackFunc[EGSTaskType_SessionStart] = fun_cb;
 	Master::G()->GetSessionSrv()->StartSession();
 }
-bool GS_IsSessionStarted()
+GS_BOOL IsSessionStarted()
 {
     if (!Master::G()->GetSessionSrv())
         return false;
 
-	return Master::G()->GetSessionSrv()->IsStarted()==TRUE ? true : false;
+	return Master::G()->GetSessionSrv()->IsStarted();
 }
-void GS_EndSession(GSCB_Func fun_cb)
+GS_VOID EndSession(GSCB_Func fun_cb)
 {
     if (!Master::G()->GetSessionSrv())
         return;
@@ -426,7 +426,7 @@ void GS_EndSession(GSCB_Func fun_cb)
 	GS_CallBackFunc[EGSTaskType_SessionEnd] = fun_cb;
 	Master::G()->GetSessionSrv()->EndSession();
 }
-void GS_LeaveSession(GSCB_Func fun_cb)
+GS_VOID LeaveSession(GSCB_Func fun_cb)
 {
     if (!Master::G()->GetSessionSrv())
         return;
@@ -434,7 +434,7 @@ void GS_LeaveSession(GSCB_Func fun_cb)
 	GS_CallBackFunc[EGSTaskType_SessionLeave] = fun_cb;
 	Master::G()->GetSessionSrv()->LeaveSession();
 }
-void GS_DeleteSession(GSCB_Func fun_cb)
+GS_VOID DeleteSession(GSCB_Func fun_cb)
 {
     if (!Master::G()->GetSessionSrv())
         return;
@@ -444,7 +444,7 @@ void GS_DeleteSession(GSCB_Func fun_cb)
 }
 
 // Achievement functions:
-void GS_WriteAchievement(int num, int* ids)
+GS_VOID WriteAchievement(GS_INT num, GS_INT* ids)
 {
     if (!Master::G()->GetAchievementSrv())
         return;
@@ -452,7 +452,7 @@ void GS_WriteAchievement(int num, int* ids)
 	Master::G()->GetAchievementSrv()->Write(num,ids);
 }
 
-void GS_ShowAchievementUI()
+GS_VOID ShowAchievementUI()
 {
 	#if defined(_XBOX) || defined(_XENON)
     if (!Master::G()->GetAchievementSrv())
@@ -462,7 +462,7 @@ void GS_ShowAchievementUI()
 	#endif
 }
 
-void GS_UnlockFullGame()
+GS_VOID UnlockFullGame()
 {
 #if defined(_XBOX) || defined(_XENON)
 	XShowMarketplaceUI(SignIn::GetActiveUserIndex(),XSHOWMARKETPLACEUI_ENTRYPOINT_CONTENTLIST,0,-1);
@@ -476,45 +476,37 @@ void GS_UnlockFullGame()
 #endif
 }
 
-bool GS_IsUserSignInLive()
+GS_BOOL IsUserSignInLive()
 {
 #if defined(_XBOX) || defined(_XENON)
-	return SignIn::IsUserSignedInOnline(SignIn::GetActiveUserIndex())==1 ? true:false;
+	return SignIn::IsUserSignedInOnline(SignIn::GetActiveUserIndex());
 #endif
-    return true;
+    return TRUE;
 }
 
-bool GS_IsAchievementEarned(int index)
+GS_BOOL IsAchievementEarned(GS_INT index)
 {
     if (!Master::G()->GetAchievementSrv())
-        return false;
+        return FALSE;
 
     return Master::G()->GetAchievementSrv()->IsEarned(index);
 }
 
-bool HasAchievementRead()
+GS_BOOL HasAchievementRead()
 {
     if (!Master::G()->GetAchievementSrv())
-        return false;
+        return FALSE;
 
     return Master::G()->GetAchievementSrv()->HasRead();
 }
 
 // tracking functions:
-bool GS_TrackingSendTag(char* tag, char* attributes)
+GS_BOOL TrackingSendTag(char* tag, char* attributes)
 {
-	return Master::G()->SendTrackingTag(tag, attributes)==1?true:false;
+	return Master::G()->SendTrackingTag(tag, attributes);
 }
 
-void GS_StorageDeviceReset()
-{
-	#if defined(_XBOX) || defined(_XENON)
-	SignIn::StorageDeviceReset();
-	#endif
-}
-
-
-int AreUsersSignedIn()
+GS_INT AreUsersSignedIn()
 {
 	#if defined(_XBOX) || defined(_XENON)
 		return SignIn::AreUsersSignedIn();
@@ -523,19 +515,19 @@ int AreUsersSignedIn()
 }
 
 #if defined(_XBOX) || defined(_XENON)
-void PressStartButton(int userIndex)
+GS_VOID PressStartButton(GS_INT userIndex)
 {
 	SignIn::SetActiveUserIndex(userIndex);
 	SignIn::SetBeforePressStart(FALSE);
 	SignIn::QuerySigninStatus();
-	SignIn::StorageDeviceReset();//clear storage device id.
+	//SignIn::StorageDeviceReset();//clear storage device id.
 }
 #endif
 
 // ======================================================== 
 // Get Language and Locale code
 // ======================================================== 
-void GetConsoleLangLocaleAbbr(char* output)
+GS_VOID GetConsoleLangLocaleAbbr(char* output)
 {
 	char* lang;
 	char linker[] = "-";
@@ -720,7 +712,7 @@ void GetConsoleLangLocaleAbbr(char* output)
     if (!SignIn::IsUserOnline())
         return;
 
-    int ps3_lang = -1;
+    GS_INT ps3_lang = -1;
     SceNpCountryCode ps3_country;
 
     if (sceNpManagerGetAccountRegion(&ps3_country, &ps3_lang) < 0)
@@ -728,7 +720,7 @@ void GetConsoleLangLocaleAbbr(char* output)
         strcpy(ps3_country.data, "fr");
     }
 
-    switch(GS_GetSystemLanguage())
+    switch(GetSystemLanguage())
     {
     default:
     case GS_ELang_English:
@@ -791,7 +783,7 @@ void GetConsoleLangLocaleAbbr(char* output)
 // ======================================================== 
 // SysMsgBox functions
 // ======================================================== 
-void ShowSysMsgBox_SaveDataNoFreeSpace( GSCB_Func fun_cb, int needExtraKB )
+GS_VOID ShowSysMsgBox_SaveDataNoFreeSpace( GSCB_Func fun_cb, GS_INT needExtraKB )
 {
     if (Master::G()->GetSysMsgBoxManager())
 	{
@@ -801,30 +793,36 @@ void ShowSysMsgBox_SaveDataNoFreeSpace( GSCB_Func fun_cb, int needExtraKB )
 	GS_CallBackFunc[EGSTaskType_SysMsgBox_SaveDataNoFreeSpace] = fun_cb;
 }
 
-void ShowSysMsgBox_KeyFileCorrupted()
+GS_VOID ShowSysMsgBox_KeyFileCorrupted()
 {
     if (Master::G()->GetSysMsgBoxManager())
 	{
         Master::G()->GetSysMsgBoxManager()->Display(EMODE_KeyFileCorrupted);
 	}
 }
-void ShowSysMsgBox_TrophyNoFreeSpace()
+GS_VOID ShowSysMsgBox_TrophyNoFreeSpace()
 {
     if (Master::G()->GetSysMsgBoxManager())
         Master::G()->GetSysMsgBoxManager()->Display(EMODE_TrophyNoSpace);
 }
 
-void ShowSysMsgBox_PlayOtherUserSaveData()
+GS_VOID ShowSysMsgBox_PlayOtherUserSaveData()
 {
     if (Master::G()->GetSysMsgBoxManager())
         Master::G()->GetSysMsgBoxManager()->Display(EMODE_PlayOtherUserSaveData);
+}
+
+GS_VOID ShowSysMsgBox_PlayerAgeForbidden()
+{
+	if (Master::G()->GetSysMsgBoxManager())
+		Master::G()->GetSysMsgBoxManager()->Display(EMODE_PlayerAgeForbidden);
 }
 
 // ======================================================== 
 // RichPresence
 // ======================================================== 
 #if defined(_XBOX) || defined(_XENON)
-void SetRichPresenceMode(int userIndex, int mode) 
+GS_VOID SetRichPresenceMode(GS_INT userIndex, GS_INT mode) 
 {
     if (userIndex == -1)
     {
@@ -833,12 +831,12 @@ void SetRichPresenceMode(int userIndex, int mode)
 
     // Update the presence mode
     // TODO: 
-    // set interval of invoking XUserSetContext
+    // set Interval of invoking XUserSetContext
     XUserSetContext( userIndex , X_CONTEXT_PRESENCE, mode );
 }
-void UpdateDefaultPresenceInfo(int defaultInfo, int activeInfo)
+GS_VOID UpdateDefaultPresenceInfo(GS_INT defaultInfo, GS_INT activeInfo)
 {
-    for (int i=0;i<XUSER_MAX_COUNT;i++)
+    for (GS_INT i=0;i<XUSER_MAX_COUNT;i++)
     {
         if (SignIn::IsUserOnline(i))
         {
@@ -872,7 +870,7 @@ GS_VOID Log(const GS_CHAR* strFormat, ...)
 
 // ======================================================== 
 // InterfaceMgr implementation
-// for internal use only
+// for Internal use only
 // ======================================================== 
 InterfaceMgr::InterfaceMgr(MessageMgr* msgMgr)
 {
@@ -884,20 +882,15 @@ InterfaceMgr::InterfaceMgr(MessageMgr* msgMgr)
 
 #define GS_CALLBACK(_index, _ret) { if (GS_CallBackFunc[_index]) {(*(GS_CallBackFunc[_index]))(_ret);} }
 
-void InterfaceMgr::MessageResponse(Message* message)
+GS_VOID InterfaceMgr::MessageResponse(Message* message)
 {
 	assert(message->GetMessageID() == EMessage_CallBackInterface);
 
-	int task_type = *(int*)message->ReadPayload(0);
-	bool result = *(bool*)message->ReadPayload(1);
+	GS_INT task_type = *(GS_INT*)message->ReadPayload(0);
+	GS_INT result = *(GS_INT*)message->ReadPayload(1);
 
 	GS_CALLBACK(task_type, result);
 }
 
-void ShowSysMsgBox_PlayerAgeForbidden()
-{
-	if (Master::G()->GetSysMsgBoxManager())
-		Master::G()->GetSysMsgBoxManager()->Display(EMODE_PlayerAgeForbidden);
-}
 } // namespace GameService
 

@@ -79,6 +79,12 @@ public:
 #endif
         return m_pFriendsSrv; 
     }
+
+    GS_BOOL IsTrialVersion()
+    {
+        return m_bIsTrial;
+    }
+
 #if defined(_PS3)
 #ifdef INGAMEBROWSING
 	InGameBrowsing*  GetInGameBrowsingSrv() 

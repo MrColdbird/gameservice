@@ -1,12 +1,12 @@
 // ======================================================================================
-// File         : Interface.h
+// File         : GS_INTerface.h
 // Author       : Li Chen 
 // Last Change  : 07/29/2010 | 15:47:24 PM | Thursday,July
 // Description  : 
 // ======================================================================================
 
-#ifndef GAMESERVICE_INTERFACE_H
-#define GAMESERVICE_INTERFACE_H
+#ifndef GAMESERVICE_GS_INTERFACE_H
+#define GAMESERVICE_GS_INTERFACE_H
 
 #if defined(_XENON) || defined(_XBOX)
 #include <xtl.h>
@@ -73,100 +73,99 @@ enum
     GS_ETrackingTag_AWARD_UNLOCK,
 };
 
-void GetConsoleLangLocaleAbbr(char* output);
+GS_VOID GetConsoleLangLocaleAbbr(char* output);
 
 // callback mechanism:
 // TODO: callback function definition
-typedef void (*GSCB_Func)(bool);
+typedef void (*GSCB_Func)(int);
 
-// Interface functions:
-void GS_Initialize(bool requireOnline, int achieveCount, int versionId, bool bTrial, int bDumpLog
+// GS_INTerface functions:
+GS_VOID Initialize(GS_BOOL requireOnline, GS_INT achieveCount, GS_INT versionId, GS_BOOL bTrial, GS_INT bDumpLog
 #if defined(_PS3)
-                   , int iFreeSpaceAvail
+                   , GS_INT iFreeSpaceAvail
 #endif
                    );
-void GS_Update(void);
-void GS_Destroy(void);
+GS_VOID Update(GS_VOID);
+GS_VOID Destroy(GS_VOID);
 
 // Profile fucntions:
-bool GS_NotifyNoProfileSignedIn();
-int GS_GetSignedInUserCount();
-void GS_SetBeforePressStart(int before);
-int GetBeforePressStart();
+GS_BOOL NotifyNoProfileSignedIn();
+GS_INT GetSignedInUserCount();
+GS_VOID SetBeforePressStart(GS_INT before);
+GS_INT GetBeforePressStart();
 #if defined(_PS3)
-int GS_GetUserAge();
-int GS_GetUserLanguage();
+GS_INT GetUserAge();
+GS_INT GetUserLanguage();
 #endif
-int GS_GetSystemLanguage();
-int IsCableConnected();
-void RequestSignIn();
+GS_INT GetSystemLanguage();
+GS_INT IsCableConnected();
+GS_VOID RequestSignIn();
 #if defined(_XBOX) || defined(_XENON)
-void PressStartButton(int userIndex);
+GS_VOID PressStartButton(GS_INT userIndex);
 #endif
 
 // session:
-void GS_CreateSession(GSCB_Func fun_cb);
-void GS_JoinSession(GSCB_Func fun_cb);
-void GS_StartSession(GSCB_Func fun_cb);
-void GS_EndSession(GSCB_Func fun_cb);
-void GS_LeaveSession(GSCB_Func fun_cb);
-void GS_DeleteSession(GSCB_Func fun_cb);
-bool GS_IsSessionCreated();
-bool GS_IsSessionStarted();
+GS_VOID CreateSession(GSCB_Func fun_cb);
+GS_VOID JoinSession(GSCB_Func fun_cb);
+GS_VOID StartSession(GSCB_Func fun_cb);
+GS_VOID EndSession(GSCB_Func fun_cb);
+GS_VOID LeaveSession(GSCB_Func fun_cb);
+GS_VOID DeleteSession(GSCB_Func fun_cb);
+GS_BOOL IsSessionCreated();
+GS_BOOL IsSessionStarted();
 
 // leaderboard definition:
-void GS_RetrieveLocalStats(int immediately, int boardId, int columnNum, int* columnIds, GSCB_Func fun_cb);
-int GS_ReadLeaderboardFinished();
-int GS_GetLeaderboardCount();
-char* GS_GetLeaderboardName(int index);
-int GS_GetLeaderboardRank(int index);
-int GS_GetLeaderboardScore(int index);
-int GetStatsErrorCode();
+GS_VOID RetrieveLocalStats(GS_INT immediately, GS_INT boardId, GS_INT columnNum, GS_INT* columnIds, GSCB_Func fun_cb);
+GS_INT ReadLeaderboardFinished();
+GS_INT GetLeaderboardCount();
+char* GetLeaderboardName(GS_INT index);
+GS_INT GetLeaderboardRank(GS_INT index);
+GS_INT GetLeaderboardScore(GS_INT index);
+GS_INT GetStatsErrorCode();
 #if defined(_XBOX) || defined (_XENON)
-ULONGLONG GS_GetKeyValueFromStats(int lbIndex);
-void GS_WriteStats(GSCB_Func fun_cb, int lbNum, XSESSION_VIEW_PROPERTIES* views);
-void GS_FlushStats(GSCB_Func fun_cb);
-bool GS_ReadStats(int boardId, int columnNum, int* columnIds, int rankIdx, int userIndex, int maxRowNum, int myScoreOffset, GSCB_Func fun_cb);
-bool GS_ReadFriendsStats(int boardId, int columnNum, int* columnIds, int rankIdx, int userIndex, int maxRowNum, GSCB_Func fun_cb);
-bool GS_CanWriteStats();
+ULONGLONG GetKeyValueFromStats(GS_INT lbIndex);
+GS_VOID WriteStats(GSCB_Func fun_cb, GS_INT lbNum, XSESSION_VIEW_PROPERTIES* views);
+GS_VOID FlushStats(GSCB_Func fun_cb);
+GS_BOOL ReadStats(GS_INT boardId, GS_INT columnNum, GS_INT* columnIds, GS_INT rankIdx, GS_INT userIndex, GS_INT maxRowNum, GS_INT myScoreOffset, GSCB_Func fun_cb);
+GS_BOOL ReadFriendsStats(GS_INT boardId, GS_INT columnNum, GS_INT* columnIds, GS_INT rankIdx, GS_INT userIndex, GS_INT maxRowNum, GSCB_Func fun_cb);
+GS_BOOL CanWriteStats();
 #elif defined(_PS3)
-int GS_GetKeyValueFromStats(int lbIndex);
-void GS_WriteStats(GSCB_Func fun_cb, int iLBId, int score);
-bool GS_ReadStats(int boardId, int score, int rankIdx, int userIndex, int maxRowNum, int myScoreOffset, GSCB_Func fun_cb);
-bool GS_ReadFriendsStats(int boardId, int score, int rankIdx, int userIndex, int maxRowNum, GSCB_Func fun_cb);
+GS_INT GetKeyValueFromStats(GS_INT lbIndex);
+GS_VOID WriteStats(GSCB_Func fun_cb, GS_INT iLBId, GS_INT score);
+GS_BOOL ReadStats(GS_INT boardId, GS_INT score, GS_INT rankIdx, GS_INT userIndex, GS_INT maxRowNum, GS_INT myScoreOffset, GSCB_Func fun_cb);
+GS_BOOL ReadFriendsStats(GS_INT boardId, GS_INT score, GS_INT rankIdx, GS_INT userIndex, GS_INT maxRowNum, GSCB_Func fun_cb);
 #endif
-void GS_DebugOutputStats();
-void GS_ShowGamerCard(int index);
+GS_VOID DebugOutputStats();
+GS_VOID ShowGamerCard(GS_INT index);
 
 // achievement:
-void GS_WriteAchievement(int num, int* ids);
-void GS_ShowAchievementUI();
-bool GS_IsAchievementEarned(int index);
-bool HasAchievementRead();
-void GS_UnlockFullGame();
-bool GS_IsUserSignInLive();
+GS_VOID WriteAchievement(GS_INT num, GS_INT* ids);
+GS_VOID ShowAchievementUI();
+GS_BOOL IsAchievementEarned(GS_INT index);
+GS_BOOL HasAchievementRead();
+GS_VOID UnlockFullGame();
+GS_BOOL IsUserSignInLive();
 
 // tracking function:
-bool GS_TrackingSendTag(char* tag, char* attributes);
+GS_BOOL TrackingSendTag(char* tag, char* attributes);
 
 // sysmsgbox function:
-void ShowSysMsgBox_SaveDataNoFreeSpace(GSCB_Func fun_cb, int needExtraKB);
-void ShowSysMsgBox_KeyFileCorrupted();
-void ShowSysMsgBox_TrophyNoFreeSpace();
-void ShowSysMsgBox_PlayOtherUserSaveData();
-void ShowSysMsgBox_PlayerAgeForbidden();
+GS_VOID ShowSysMsgBox_SaveDataNoFreeSpace(GSCB_Func fun_cb, GS_INT needExtraKB);
+GS_VOID ShowSysMsgBox_KeyFileCorrupted();
+GS_VOID ShowSysMsgBox_TrophyNoFreeSpace();
+GS_VOID ShowSysMsgBox_PlayOtherUserSaveData();
+GS_VOID ShowSysMsgBox_PlayerAgeForbidden();
 
 // rich presence
 #if defined(_XBOX) || defined(_XENON)
-void SetRichPresenceMode(int userIndex, int mode);
-void UpdateDefaultPresenceInfo(int defaultInfo, int activeInfo);
+GS_VOID SetRichPresenceMode(GS_INT userIndex, GS_INT mode);
+GS_VOID UpdateDefaultPresenceInfo(GS_INT defaultInfo, GS_INT activeInfo);
 #endif
 
 // for log outside
 GS_VOID Log(const GS_CHAR* strFormat, ...);
-    
-void GS_StorageDeviceReset();
-int AreUsersSignedIn();
+
+GS_INT AreUsersSignedIn();
 
 #ifdef __cplusplus
 } // extern "C"
@@ -175,4 +174,4 @@ int AreUsersSignedIn();
 
 #endif
 
-#endif // GAMESERVICE_INTERFACE_H
+#endif // GAMESERVICE_GS_INTERFACE_H

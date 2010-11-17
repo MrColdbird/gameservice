@@ -177,18 +177,16 @@ public:
     
 	// Check privileges for a signed-in users
     static GS_BOOL     CheckPrivilege( GS_DWORD dwController, XPRIVILEGE_TYPE priv );
-	static bool NotifyNoProfileSignedIn()
+	static GS_BOOL NotifyNoProfileSignedIn()
 	{
-		bool ret = m_bCanNotifyNoProfile;
+		GS_BOOL ret = m_bCanNotifyNoProfile;
 		if (m_bCanNotifyNoProfile)
 		{
-			m_bCanNotifyNoProfile = false;
+			m_bCanNotifyNoProfile = FALSE;
 		}
 
 		return ret;
 	}
-
-	static GS_VOID StorageDeviceReset();
 
 #elif defined(_PS3)
     static GS_BOOL StartNP();
@@ -287,7 +285,7 @@ private:
     static LPCWSTR  m_pwstrButtons[2];             // message box buttons
     static MESSAGEBOX_RESULT m_MessageBoxResult;  // message box button pressed
     static GS_BOOL        m_bPrivate[ XUSER_MAX_COUNT ]; // Users consuming private slots
-	static bool m_bCanNotifyNoProfile;
+	static GS_BOOL m_bCanNotifyNoProfile;
     static GS_CHAR m_cUserName[XUSER_MAX_COUNT][MAX_USER_NAME];
 	static XUID m_InvalidID;
 	//JinYu+

@@ -1,7 +1,7 @@
 // ======================================================================================
 // File         : Master.cpp
 // Author       : Li Chen 
-// Last Change  : 07/29/2010 | 15:47:43 PM | Thursday,July
+// Last Change  : 11/17/2010 | 11:36:26 AM | Wednesday,November
 // Description  : 
 // ======================================================================================
 
@@ -18,6 +18,7 @@
 #include "LogFile.h"
 #include "OSDK/Tracking/TrackingManager.h"
 #include <RendezVous.h>
+
 #if defined(_PS3)
 
 #ifdef INGAMEBROWSING
@@ -70,12 +71,6 @@ GS_VOID Master::Initialize(GS_BOOL requireOnlineUser, GS_INT signInPanes, GS_INT
 #endif
                            )
 {
- #ifdef _PS3
-#ifndef _FINAL_RELEASE_
-	TimeCheck t = TimeCheck("Master::Initialize");
-#endif
-#endif
-
     if (isDumpLog)
         m_pLogFile = new(GSOPType) LogFile();
 
@@ -96,12 +91,7 @@ GS_VOID Master::Initialize(GS_BOOL requireOnlineUser, GS_INT signInPanes, GS_INT
 
 GS_VOID Master::InitServices()
 {
-#ifdef _PS3
-#ifndef _FINAL_RELEASE_
-	TimeCheck t = TimeCheck("Master::InitServices");
-#endif
-#endif
-if (m_bInitialized)
+    if (m_bInitialized)
     {
         ResetServices();
         return;
@@ -265,18 +255,6 @@ Master::~Master()
 
 GS_VOID Master::Update()
 {
-#ifdef _PS3
-#ifndef _FINAL_RELEASE_
-	static int num = 0;
-	TimeCheck* t=NULL;
-	if(num <=3)
-	{
-		num++;
-		t = new TimeCheck("Master::Update");
-	}
-#endif
-#endif
-
 	SignIn::Update();
 
     if (m_pStatsSrv)
@@ -294,15 +272,6 @@ GS_VOID Master::Update()
     if (m_pSysMsgBoxManager)
         m_pSysMsgBoxManager->Update();
 
-#ifdef _PS3
-#ifndef _FINAL_RELEASE_
-	if(t != NULL)
-	{
-		delete t;
-		t = NULL;
-	}
-#endif
-#endif
 }
 
 GS_BOOL Master::SendTrackingTag(GS_CHAR* cName, GS_CHAR* cAttribute)

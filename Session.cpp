@@ -305,9 +305,9 @@ void SessionSrv::MessageResponse(Message* message)
 	{
 		msg->AddPayload(taskType);
 #if defined(_XBOX) || defined(_XENON)
-		bool result = (ERROR_SUCCESS == taskResult) ? true : false;
+		GS_BOOL result = (ERROR_SUCCESS == taskResult) ? TRUE : FALSE;
 #elif defined(_PS3)
-		bool result = (0 == taskResult) ? true : false;
+		GS_BOOL result = (0 == taskResult) ? TRUE : FALSE;
 #endif
 		msg->AddPayload(result);
 

@@ -39,23 +39,22 @@ public:
 	static Message* Create(MessageID messageId);
 	void Discard();
 	MessageID GetMessageID() { return m_MessageId; }
-	//void AddPayload( void* payload ) { }			
-	void AddPayload( bool payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) bool(payload)); }
-	void AddPayload( char payload )	{ m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) char(payload)); }
-	void AddPayload( signed char payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) signed char(payload)); }
-	void AddPayload( unsigned char payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) unsigned char(payload)); }	
-	void AddPayload( short payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) short(payload)); }
-	void AddPayload( unsigned short payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) unsigned short(payload)); }
-	void AddPayload( int payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) int(payload)); }
-	void AddPayload( unsigned int payload )	{ m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) unsigned int(payload)); }
-	void AddPayload( long payload )	{ m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) long(payload)); }
-	void AddPayload( unsigned long payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) unsigned long(payload)); }
-	void AddPayload( long long payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) long long(payload)); }
-	void AddPayload( unsigned long long payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) unsigned long long(payload)); }
-	void AddPayload( float payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) float(payload)); }		
-	void AddPayload( double payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) double(payload)); }
-	void AddPayload( MessageID payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) MessageID(payload)); }
-	//void AddPayload( char* payload )
+
+	GS_VOID AddPayload( GS_BOOL payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_BOOL(payload)); }
+	//GS_VOID AddPayload( GS_CHAR payload )	{ m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType)GS_CHAR>(payload)); }
+	//GS_VOID AddPayload( GS_BYTE payload ) { m_PayloadArray.AddItem(new(GSOPType)GS_BYTE>(payload)); }	
+	//GS_VOID AddPayload( GS_WORD payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType)GS_WORD>(payload)); }
+#if defined(_XBOX) || defined(_XENON) || defined(_WINDOWS)
+	GS_VOID AddPayload( GS_DWORD payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_DWORD(payload)); }
+#elif defined(_PS3)
+	GS_VOID AddPayload( GS_INT payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_INT(payload)); }
+#endif
+	//GS_VOID AddPayload( GS_SIZET payload )	{ m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_SIZET(payload)); }
+	//GS_VOID AddPayload( GS_INT64 payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_INT64(payload)); }
+	//GS_VOID AddPayload( GS_UINT64 payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_UINT64(payload)); }
+	GS_VOID AddPayload( GS_FLOAT payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_FLOAT(payload)); }		
+	GS_VOID AddPayload( GS_DOUBLE payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_DOUBLE(payload)); }
+	GS_VOID AddPayload( MessageID payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) MessageID(payload)); }
 
 	void AddTarget(MessageRecipient* target) ;
 	MessageRecipient* GetTarget() {return m_recipient;}
