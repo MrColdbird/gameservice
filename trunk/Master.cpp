@@ -132,10 +132,12 @@ GS_VOID Master::InitServices()
     m_pFriendsSrv->RetrieveFriendsList(SignIn::GetActiveUserIndex());
 
     // Tracking:
+#ifdef GAMESERVIE_TRACKING_ENABLE
     m_pTrackingMgr = new(GSOPType) TrackingManager();
     m_pTrackingMgr->SetVersionID(m_iVersionID);
     m_pTrackingMgr->SetLicenseType(!m_bIsTrial);
     m_pTrackingMgr->Initialize();
+#endif
 
 #if defined(_PS3)
 #ifdef INGAMEBROWSING

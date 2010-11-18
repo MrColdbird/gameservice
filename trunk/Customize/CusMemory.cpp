@@ -2,8 +2,11 @@
 
 #undef GS_USE_ENGINE_MEMORY_SCHEME
 
+// ======================================================== 
 // trigger the customized memory management
+// ======================================================== 
 //#define GS_USE_ENGINE_MEMORY_SCHEME 1
+
 
 // ======================================================== 
 // Customize memory allignment here:
@@ -49,7 +52,7 @@ GS_VOID Free(GS_VOID* ptr)
     // use default free
     if (ptr)
     {
-        delete [] ptr;
+        delete [] (GS_BYTE*)ptr;
     }
 
 	return;
