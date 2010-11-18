@@ -9,6 +9,7 @@
 #ifndef GAMESERVICE_SINGLETON_H
 #define GAMESERVICE_SINGLETON_H
 
+//#define INGAMEBROWSING
 
 namespace GameService
 {

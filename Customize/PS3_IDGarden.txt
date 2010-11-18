@@ -1,3 +1,4 @@
+
 // communication id
 const SceNpCommunicationId SignIn::m_NpCommID = 
 {
@@ -6,6 +7,7 @@ const SceNpCommunicationId SignIn::m_NpCommID =
     0,
     0
 };
+
 // signature
 const SceNpCommunicationSignature SignIn::m_NpCommSig = 
 {
@@ -32,6 +34,7 @@ const SceNpCommunicationSignature SignIn::m_NpCommSig =
         0x60,0x1e,0x3c,0x4e,0x42,0x4c,0x2a,0x3d
     }
 };
+
 // passphrase
 const SceNpCommunicationPassphrase SignIn::m_NpPassPhrase = 
 {
@@ -54,11 +57,18 @@ const SceNpCommunicationPassphrase SignIn::m_NpPassPhrase =
         0x1f,0x86,0x8b,0x86,0xd6,0x0e,0x90,0x91
     }
 };
+
+// ServiceID and ProduceID
+// SCEA,SCEE... definition is in Interface.h
 #if SCEA_SUBMISSION
 const char SignIn::m_NpServiceID[] = "UP0001-NPUB30394_00";
+const char SignIn::m_NpProductID[] = "UP0001-NPUB30394_00-KEY0000000000001";
 #elif SCEE_SUBMISSION
 const char SignIn::m_NpServiceID[] = "EP0001-NPEB00435_00";
+const char SignIn::m_NpProductID[] = "EP0001-NPEB00435_00-KEY0000000000001";
 #else
 const char SignIn::m_NpServiceID[] = "UP0001-NPXX00865_00";
+const char SignIn::m_NpProductID[] = "UP0001-NPXX00865_00-KEY0000000000001";
 #endif
+
 
