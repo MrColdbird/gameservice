@@ -16,17 +16,9 @@
 #endif
 
 //#define INGAMEBROWSING
+
 #define SCEA_SUBMISSION 0
 #define SCEE_SUBMISSION 1
-
-#if SCEA_SUBMISSION
-#define NP_GUI_PRODUCT_ID "UP0001-NPUB30394_00-KEY0000000000001"
-#elif SCEE_SUBMISSION
-#define NP_GUI_PRODUCT_ID "EP0001-NPEB00435_00-KEY0000000000001"
-#else
-#define NP_GUI_PRODUCT_ID "UP0001-NPXX00865_00-KEY0000000000001"
-#endif
-
 
 // ======================================================== 
 // Tracking system trigger:

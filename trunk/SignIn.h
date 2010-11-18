@@ -218,6 +218,10 @@ public:
     {
         return m_NpServiceID;
     }
+    static const char* GetNpProductID()
+    {
+        return m_NpProductID;
+    }
     static GS_BOOL IsUserOnline()
     {
         return m_bIsOnline;
@@ -308,7 +312,8 @@ private:
     static const SceNpCommunicationSignature    m_NpCommSig;
     static const SceNpCommunicationId           m_NpCommID;
     static const SceNpCommunicationPassphrase   m_NpPassPhrase;
-    static const char                           m_NpServiceID[64];
+    static const char                           m_NpServiceID[32];
+    static const char                           m_NpProductID[64];
     static int              m_UserAge;
     static GS_BOOL          m_bStarNPInProgress;
 #endif

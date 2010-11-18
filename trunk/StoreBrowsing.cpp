@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #ifdef _PS3
-#include "interface.h"
-#include "master.h"
+#include "SignIn.h"
 #include "StoreBrowsing.h"
 #include <stdlib.h>
 #include <string.h>
@@ -64,7 +63,7 @@ namespace GameService
 
 		ret = sceNpCommerce2ExecuteStoreBrowse(
 		    SCE_NP_COMMERCE2_STORE_BROWSE_TYPE_PRODUCT,
-		    NP_GUI_PRODUCT_ID, 0x87654321);
+		    SignIn::GetNpProductID(), 0x87654321);
 		if(ret < 0){
 			printf("sceNpCommerce2ExecuteStoreBrowse() failed. ret = 0x%x\n", ret);
 		}

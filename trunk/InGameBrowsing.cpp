@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #ifdef _PS3
 #include "interface.h"
-#include "master.h"
+#include "SignIn.h"
 #include "InGameBrowsing.h"
 #include <stdlib.h>
 #include <string.h>
@@ -107,18 +107,6 @@ void InGameBrowsing::Init()
 {
 	int ret;
 
-	//ret = cellSysmoduleLoadModule(CELL_SYSMODULE_NET);
-	//if (ret < 0) {
-	//	printf("cellSysmoduleLoadModule(CELL_SYSMODULE_NET) failed (0x%x)\n", ret);
-	//	goto error;
-	//}
-
-	//ret = cellSysmoduleLoadModule(CELL_SYSMODULE_HTTPS);
-	//if (ret < 0) {
-	//	printf("cellSysmoduleLoadModule(CELL_SYSMODULE_HTTPS) failed (0x%x)\n", ret);
-	//	goto error;
-	//}
-
 	ret = cellSysmoduleLoadModule(CELL_SYSMODULE_SYSUTIL_NP_COMMERCE2);
 	if (ret < 0) {
 		printf("cellSysmoduleLoadModule(CELL_SYSMODULE_SYSUTIL_COMMERCE2) failed (0x%x)\n", ret);
@@ -129,11 +117,6 @@ void InGameBrowsing::Init()
 		printf("sys_net_initialize_network() failed (0x%x)\n", ret);
 		goto error;
 	}
-
-	//ret = cellNetCtlInit();
-	//if(ret < 0){
-	//	goto error;
-	//}
 
 	gSslPool = malloc(SSL_POOL_SIZE);
 	if(gSslPool == NULL){
@@ -254,11 +237,6 @@ void InGameBrowsing::Term()
 		printf("sceNpCommerce2Term() failed (0x%x)\n", ret);
 	}
 
-	//ret = cellSysmoduleUnloadModule(CELL_SYSMODULE_HTTPS);
-	//if (ret < 0) {
-	//	printf("cellSysmoduleUnloadModule(CELL_SYSMODULE_HTTPS) failed (0x%x)\n", ret);
-	//}
-
 	ret = cellSysmoduleUnloadModule(CELL_SYSMODULE_SYSUTIL_NP_COMMERCE2);
 	if (ret < 0) {
 		printf("cellSysmoduleUnloadModule(CELL_SYSMODULE_SYSUTIL_NP_COMMERCE2) failed (0x%x)\n", ret);
@@ -312,7 +290,7 @@ void InGameBrowsing::Start()
 	}
 
 	ret = sceNpCommerce2DoProductBrowseStartAsync(gi_ctxId,
-	    NP_GUI_PRODUCT_ID, cid, NULL);
+	    SignIn::GetNpProductID(), cid, NULL);
 	if(ret < 0){
 		printf("sceNpCommerce2DoProductBrowseStartAsync() failed. ret = 0x%x\n", ret);
 		goto error;
