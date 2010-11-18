@@ -27,6 +27,13 @@
 #define NP_GUI_PRODUCT_ID "UP0001-NPXX00865_00-KEY0000000000001"
 #endif
 
+
+// ======================================================== 
+// Tracking system trigger:
+// ======================================================== 
+//#define GAMESERVIE_TRACKING_ENABLE 1
+
+
 #if defined(_XBOX) || defined(_XENON) || defined(_PS3)
 
 #include "Utils.h"
