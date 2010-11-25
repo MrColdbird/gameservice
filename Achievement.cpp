@@ -312,7 +312,7 @@ void AchievementSrv::Write(GS_INT num, GS_INT* ids)
 
 	for (GS_INT i=0;i<num;i++)
 	{
-		pAchievements[i].dwUserIndex = SignIn::GetSignedInUser();
+		pAchievements[i].dwUserIndex = SignIn::GetActiveUserIndex();
 		pAchievements[i].dwAchievementId = ids[i];
 	}
 
