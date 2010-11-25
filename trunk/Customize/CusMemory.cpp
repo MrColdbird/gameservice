@@ -104,15 +104,16 @@ GS_BYTE* Realloc( GS_BYTE* ptr, GS_DWORD size, GS_DWORD oldsize )
 #endif
 }	
 
-GS_VOID Assert()
+GS_VOID Assert(GS_BOOL value)
 {
 #if GS_USE_ENGINE_MEMORY_SCHEME
-    ERR_X_Assert(0);
+    ERR_X_Assert(value);
 #else
 #if defined(_XBOX) || defined(_XENON) || defined(_WINDOWS)
-    DebugBreak();
+    if (!value)
+        DebugBreak();
 #elif defined(_PS3)
-    assert(0);
+    assert(value);
 #endif
 #endif
 }

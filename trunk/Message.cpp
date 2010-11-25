@@ -40,7 +40,7 @@ void Message::AddTarget(MessageRecipient* target)
 {
 	if (m_recipient)
 	{
-		assert(0); 
+		Assert(0); 
 	}
 	else 
 	{
@@ -50,7 +50,7 @@ void Message::AddTarget(MessageRecipient* target)
 		}
 		else 
 		{
-			assert(0);
+			Assert(0);
 		}
 	}
 }
@@ -120,7 +120,7 @@ GS_BOOL MessageMgr::Send(Message *message)
 
 	GS_BOOL bSent = FALSE;	
 	
-	assert(message_id > EMessage_NONE && message_id < EMessage_MAX);
+	Assert(message_id > EMessage_NONE && message_id < EMessage_MAX);
 
 	if(m_MessageHandlers[message_id])
 	{

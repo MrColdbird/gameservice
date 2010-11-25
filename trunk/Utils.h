@@ -83,7 +83,7 @@ GS_VOID FatalError( const char*, ... );
 // Assert in debug but still execute code in release
 // Useful for validating expected return values from functions
 #ifdef _DEBUG
-    #define GameService_Verify( e ) assert( e )
+    #define GameService_Verify( e ) Assert( e )
 #else
     #define GameService_Verify( e ) GameService_Unused( e )
 #endif    
