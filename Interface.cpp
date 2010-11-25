@@ -884,7 +884,7 @@ InterfaceMgr::InterfaceMgr(MessageMgr* msgMgr)
 
 GS_VOID InterfaceMgr::MessageResponse(Message* message)
 {
-	assert(message->GetMessageID() == EMessage_CallBackInterface);
+	Assert(message->GetMessageID() == EMessage_CallBackInterface);
 
 	GS_INT task_type = *(GS_INT*)message->ReadPayload(0);
 	GS_INT result = *(GS_INT*)message->ReadPayload(1);

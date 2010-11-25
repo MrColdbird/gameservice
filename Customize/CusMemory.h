@@ -37,7 +37,7 @@ GS_VOID DeleteThis(T* ptr)
     }
 }
 
-GS_VOID Assert();
+GS_VOID Assert(GS_BOOL value);
 
 } // namespace
 

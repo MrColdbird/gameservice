@@ -260,8 +260,8 @@ GS_VOID SignIn::Initialize( GS_DWORD dwMinUsers,
 {
 #if defined(_XBOX) || defined(_XENON)
     // Sanity check inputs
-    assert( dwMaxUsers <= 4 && dwMinUsers <= dwMaxUsers );
-    assert( dwSignInPanes <= 4 && dwSignInPanes != 3 );
+    Assert( dwMaxUsers <= 4 && dwMinUsers <= dwMaxUsers );
+    Assert( dwSignInPanes <= 4 && dwSignInPanes != 3 );
 
     // Assign variables
     m_dwMinUsers = dwMinUsers;
@@ -605,7 +605,7 @@ GS_VOID SignIn::QuerySigninStatus()
 GS_DWORD SignIn::Update()
 {
 #if defined(_XBOX) || defined(_XENON)
-    assert( m_hNotification != NULL );  // ensure Initialize() was called
+    Assert( m_hNotification != NULL );  // ensure Initialize() was called
 
     GS_DWORD dwRet = 0;
 

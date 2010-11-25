@@ -181,8 +181,10 @@ GS_VOID Master::ResetServices()
         m_pFriendsSrv->RetrieveFriendsList(SignIn::GetActiveUserIndex());
 
     // Tracking:
+#ifdef GAMESERVIE_TRACKING_ENABLE
     if (m_pTrackingMgr) 
         m_pTrackingMgr->Initialize();
+#endif
 
 }
 
@@ -217,10 +219,12 @@ Master::~Master()
 	{
 		Delete<AchievementSrv>(m_pAchievementSrv);
 	}
+#ifdef GAMESERVIE_TRACKING_ENABLE
     if (m_pTrackingMgr)
     {
         Delete<TrackingManager>(m_pTrackingMgr);
     }
+#endif
     if (m_pSysMsgBoxManager)
     {
         Delete<SysMsgBoxManager>(m_pSysMsgBoxManager);
@@ -262,8 +266,10 @@ GS_VOID Master::Update()
     if (m_pStatsSrv)
         m_pStatsSrv->Update();
 
+#ifdef GAMESERVIE_TRACKING_ENABLE
     if (m_pTrackingMgr)
         m_pTrackingMgr->Update();
+#endif
 
     if (m_pTaskMgr)
         m_pTaskMgr->UpdateAll();
@@ -279,16 +285,22 @@ GS_VOID Master::Update()
 GS_BOOL Master::SendTrackingTag(GS_CHAR* cName, GS_CHAR* cAttribute)
 {
     if (!m_pTrackingMgr)
-        return TRUE;
+        return FALSE;
 
+#ifdef GAMESERVIE_TRACKING_ENABLE
     return m_pTrackingMgr->SendTag(String(cName), String(cAttribute));
+#else
+    return FALSE;
+#endif
 }
 
 #if defined(_PS3)
 GS_VOID Master::SetTrackingNpTicketSize(GS_INT size)
 {
+#ifdef GAMESERVIE_TRACKING_ENABLE
     if (m_pTrackingMgr)
         m_pTrackingMgr->SetNpTicketSize(size);
+#endif
 }
 #endif
 

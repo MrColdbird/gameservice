@@ -172,7 +172,7 @@ GS_BOOL Task::Update()
 	if(GetTaskType() < EGSTaskType_ShowXUI_Max)
 	{
 		// TODO:
-		Assert();
+		Assert(0);
 
 //		if(!((OfOnlineService *)GEngine->OnlineService)->GetNotificationHandler()->IsDashBoardUsed())
 //		{
@@ -384,7 +384,7 @@ void TaskMgr::StartTask(CTaskID taskId , GS_DWORD errorCode)
 		}
 	}
 	else
-		assert(0);
+		Assert(0);
 }
 #elif defined(_PS3)
 void TaskMgr::AddTask(GS_TaskType taskType, GS_INT ctxId, MessageRecipient* taskRecipient, CTaskID* taskId)

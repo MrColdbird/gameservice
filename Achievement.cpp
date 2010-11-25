@@ -230,7 +230,7 @@ void AchievementSrv::ReadAchievements( GS_UINT userIndex, GS_INT startIndex, GS_
         &cbBuffer,                      // bytes needed
         &m_hReadHandle );
 
-    assert( dwStatus == ERROR_SUCCESS );
+    Assert( dwStatus == ERROR_SUCCESS );
 
     // Enumerate achievements
     XACHIEVEMENT_DETAILS* rgAchievements = ( XACHIEVEMENT_DETAILS* )m_Achievements;
@@ -325,10 +325,10 @@ void AchievementSrv::Write(GS_INT num, GS_INT* ids)
     // true, otherwise the title is violating TCR 069 [GP No Sharing of Achievements]
     //
     GS_DWORD dwStatus = XUserWriteAchievements( num, pAchievements, &xov );
-    assert( dwStatus == ERROR_IO_PENDING );
+    Assert( dwStatus == ERROR_IO_PENDING );
 
     dwStatus = XGetOverlappedResult( &xov, NULL, TRUE );
-    assert( dwStatus == ERROR_SUCCESS );
+    Assert( dwStatus == ERROR_SUCCESS );
 
 	Free(pAchievements);
 

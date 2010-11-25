@@ -10,7 +10,6 @@
 #include <assert.h>
 #elif defined(_PS3)
 #include <cell/sysmodule.h>
-#include <assert.h>
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>

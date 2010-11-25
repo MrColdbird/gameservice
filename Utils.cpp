@@ -81,7 +81,7 @@ GS_VOID CDECL FatalError( const GS_CHAR* strFormat, ... )
     DebugOutputV( strFormat, pArgList );
     va_end( pArgList );
 
-    Assert();
+    Assert(0);
 
     // exit(0);
 #endif
@@ -95,7 +95,7 @@ void FatalError( const char* strFormat, ... )
     printf( strFormat, pArgList );
     va_end( pArgList );
 
-    Assert();
+    Assert(0);
 #endif
 }
 #endif
