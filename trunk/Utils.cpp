@@ -29,7 +29,9 @@ static GS_VOID DebugOutputV( const GS_CHAR* strFormat, const va_list pArgList )
     // _TRUNCATE so that too long strings will be silently truncated
     // rather than triggering an error.
     _vsnprintf_s( str, _TRUNCATE, strFormat, pArgList );
+#if !defined(_WINDOWS)
     OutputDebugStringA( str );
+#endif
 #endif
 }
 #endif
@@ -38,7 +40,7 @@ static GS_VOID DebugOutputV( const GS_CHAR* strFormat, const va_list pArgList )
 // Name: DebugSpew()
 // Desc: Prints formatted debug spew
 //--------------------------------------------------------------------------------------
-#if defined(_XBOX) || defined(_XENON) || defined(_WINDOWS)
+#if defined(_XBOX) || defined(_XENON)
 #ifdef  _Printf_format_string_  // VC++ 2008 and later support this annotation
 GS_VOID CDECL DebugOutput( _In_z_ _Printf_format_string_ const GS_CHAR* strFormat, ... )
 #else
@@ -53,7 +55,7 @@ GS_VOID CDECL DebugOutput( const GS_CHAR* strFormat, ... )
 #endif
 }
 #elif defined(_PS3)
-void DebugOutput(const char * format, ...)
+GS_VOID DebugOutput(const char * format, ...)
 {
 #ifdef _DEBUG
     va_list pArgList;
@@ -62,13 +64,17 @@ void DebugOutput(const char * format, ...)
     va_end( pArgList );
 #endif
 }
+#else
+GS_VOID DebugOutput(const char * format, ...)
+{
+}
 #endif
 
 //--------------------------------------------------------------------------------------
 // Name: FatalError()
 // Desc: Prints formatted debug spew and breaks into the debugger. Exits the application.
 //--------------------------------------------------------------------------------------
-#if defined(_XBOX) || defined(_XENON) || defined(_WINDOWS)
+#if defined(_XBOX) || defined(_XENON)
 #ifdef  _Printf_format_string_  // VC++ 2008 and later support this annotation
 GS_VOID CDECL FatalError( _In_z_ _Printf_format_string_ const GS_CHAR* strFormat, ... )
 #else
@@ -81,13 +87,13 @@ GS_VOID CDECL FatalError( const GS_CHAR* strFormat, ... )
     DebugOutputV( strFormat, pArgList );
     va_end( pArgList );
 
-    Assert(0);
+    GS_Assert(0);
 
     // exit(0);
 #endif
 }
 #elif defined(_PS3)
-void FatalError( const char* strFormat, ... )
+GS_VOID FatalError( const char* strFormat, ... )
 {
 #ifdef _DEBUG
     va_list pArgList;
@@ -95,11 +101,13 @@ void FatalError( const char* strFormat, ... )
     printf( strFormat, pArgList );
     va_end( pArgList );
 
-    Assert(0);
+    GS_Assert(0);
 #endif
 }
+#else
+GS_VOID FatalError( const char* strFormat, ... )
+{
+}
 #endif
-
-GS_MemoryOP GSOPType = 0;
 
 } // namespace GameService

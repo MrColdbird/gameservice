@@ -24,6 +24,8 @@ enum MessageID
 	EMessage_ShowUserSharedReplay,
 	EMessage_CallBackInterface,
     EMessage_SignInChanged,
+    EMessage_ContentInstalled,
+	EMessage_InternalTaskDone,
 	EMessage_MAX
 };
 
@@ -40,21 +42,21 @@ public:
 	void Discard();
 	MessageID GetMessageID() { return m_MessageId; }
 
-	GS_VOID AddPayload( GS_BOOL payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_BOOL(payload)); }
-	//GS_VOID AddPayload( GS_CHAR payload )	{ m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType)GS_CHAR>(payload)); }
-	//GS_VOID AddPayload( GS_BYTE payload ) { m_PayloadArray.AddItem(new(GSOPType)GS_BYTE>(payload)); }	
-	//GS_VOID AddPayload( GS_WORD payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType)GS_WORD>(payload)); }
+	GS_VOID AddPayload( GS_BOOL payload );
+	//GS_VOID AddPayload( GS_CHAR payload )	{ m_PayloadArray.AddItem((GS_BYTE*)GS_NEWGS_CHAR>(payload)); }
+	//GS_VOID AddPayload( GS_BYTE payload ) { m_PayloadArray.AddItem(GS_NEWGS_BYTE>(payload)); }	
+	//GS_VOID AddPayload( GS_WORD payload ) { m_PayloadArray.AddItem((GS_BYTE*)GS_NEWGS_WORD>(payload)); }
 #if defined(_XBOX) || defined(_XENON) || defined(_WINDOWS)
-	GS_VOID AddPayload( GS_DWORD payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_DWORD(payload)); }
+	GS_VOID AddPayload( GS_DWORD payload );
 #elif defined(_PS3)
-	GS_VOID AddPayload( GS_INT payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_INT(payload)); }
+	GS_VOID AddPayload( GS_INT payload );
 #endif
-	//GS_VOID AddPayload( GS_SIZET payload )	{ m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_SIZET(payload)); }
-	//GS_VOID AddPayload( GS_INT64 payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_INT64(payload)); }
-	//GS_VOID AddPayload( GS_UINT64 payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_UINT64(payload)); }
-	GS_VOID AddPayload( GS_FLOAT payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_FLOAT(payload)); }		
-	GS_VOID AddPayload( GS_DOUBLE payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) GS_DOUBLE(payload)); }
-	GS_VOID AddPayload( MessageID payload ) { m_PayloadArray.AddItem((GS_BYTE*)new(GSOPType) MessageID(payload)); }
+	//GS_VOID AddPayload( GS_SIZET payload )	{ m_PayloadArray.AddItem((GS_BYTE*)GS_NEW GS_SIZET(payload)); }
+	//GS_VOID AddPayload( GS_INT64 payload ) { m_PayloadArray.AddItem((GS_BYTE*)GS_NEW GS_INT64(payload)); }
+	//GS_VOID AddPayload( GS_UINT64 payload ) { m_PayloadArray.AddItem((GS_BYTE*)GS_NEW GS_UINT64(payload)); }
+	GS_VOID AddPayload( GS_FLOAT payload );		
+	GS_VOID AddPayload( GS_DOUBLE payload );
+	//GS_VOID AddPayload( MessageID payload ) { m_PayloadArray.AddItem((GS_BYTE*)GS_NEW MessageID(payload)); }
 
 	void AddTarget(MessageRecipient* target) ;
 	MessageRecipient* GetTarget() {return m_recipient;}
@@ -70,6 +72,7 @@ private:
 class MessageRecipient
 {
 public:
+	virtual ~MessageRecipient() {}
 	virtual void MessageResponse(Message* message) = 0;
 };
 

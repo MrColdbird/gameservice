@@ -45,7 +45,7 @@ SessionSrv::SessionSrv(MessageMgr* msgMgr)
 
 //--------------------------------------------------------------------------------------
 // Name: BeginSession()
-// Desc: Create a new(GSOPType) session for writing stats
+// Desc: Create a GS_NEW session for writing stats
 //--------------------------------------------------------------------------------------
 GS_BOOL SessionSrv::BeginSession()
 {
@@ -160,8 +160,8 @@ GS_BOOL SessionSrv::CanWriteStats()
         return TRUE;
     }
 
-    return FALSE;
 #endif
+    return FALSE;
 }
 
 
@@ -262,7 +262,7 @@ GS_BOOL SessionSrv::DeleteSession()
 void SessionSrv::MessageResponse(Message* message)
 {
 	CTaskID task_id = *(CTaskID*)message->ReadPayload(0);
-	GS_TaskType taskType = (GS_TaskType)(*(GS_INT*)message->ReadPayload(1));
+	GS_INT taskType = (*(GS_INT*)message->ReadPayload(1));
 	GS_DWORD taskResult = *(GS_DWORD*)message->ReadPayload(2);
 	GS_DWORD taskDetailedResult = *(GS_DWORD*)message->ReadPayload(3);
 #if defined(_XBOX) || defined(_XENON)
@@ -304,16 +304,20 @@ void SessionSrv::MessageResponse(Message* message)
 	if (msg)
 	{
 		msg->AddPayload(taskType);
+
 #if defined(_XBOX) || defined(_XENON)
 		GS_BOOL result = (ERROR_SUCCESS == taskResult) ? TRUE : FALSE;
 #elif defined(_PS3)
 		GS_BOOL result = (0 == taskResult) ? TRUE : FALSE;
+#else
+		GS_BOOL result = TRUE;
 #endif
 		msg->AddPayload(result);
 
 		msg->AddTarget(Master::G()->GetInterfaceMgr());
 
 		Master::G()->GetMessageMgr()->Send(msg);
+
 	}
 
 }

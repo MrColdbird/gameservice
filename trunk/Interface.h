@@ -25,19 +25,19 @@
 // ======================================================== 
 //#define GAMESERVIE_TRACKING_ENABLE 1
 
+#include "Utils.h"
+#include "Array.h"
 
 #if defined(_XBOX) || defined(_XENON) || defined(_PS3)
 
-#include "Utils.h"
-
 #ifdef __cplusplus
-namespace GameService
-{
-
 extern "C" {
 #endif
 
 #include "TaskType.h"
+
+namespace GameService
+{
 
 // Language enum
 enum
@@ -72,6 +72,7 @@ enum
     GS_ETrackingTag_AWARD_UNLOCK,
 };
 
+
 GS_VOID GetConsoleLangLocaleAbbr(char* output);
 
 // callback mechanism:
@@ -81,17 +82,18 @@ typedef void (*GSCB_Func)(int);
 // GS_INTerface functions:
 GS_VOID Initialize(GS_BOOL requireOnline, GS_INT achieveCount, GS_INT versionId, GS_BOOL bTrial, GS_INT bDumpLog
 #if defined(_PS3)
-                   , GS_INT iFreeSpaceAvail
+                   , GS_INT iFreeSpaceAvail, GS_BOOL enableInGameMarketplace
 #endif
                    );
 GS_VOID Update(GS_VOID);
 GS_VOID Destroy(GS_VOID);
+GS_BOOL IsUserOnline();
 
 // Profile fucntions:
 GS_BOOL NotifyNoProfileSignedIn();
 GS_INT GetSignedInUserCount();
-GS_VOID SetBeforePressStart(GS_INT before);
-GS_INT GetBeforePressStart();
+GS_VOID SetBeforePressStart(GS_BOOL before);
+GS_BOOL GetBeforePressStart();
 #if defined(_PS3)
 GS_INT GetUserAge();
 GS_INT GetUserLanguage();
@@ -102,6 +104,11 @@ GS_VOID RequestSignIn();
 #if defined(_XBOX) || defined(_XENON)
 GS_VOID PressStartButton(GS_INT userIndex);
 #endif
+GS_CHAR* GetUserName(GS_UINT iUser);
+#if defined(_XBOX) || defined(_XENON)
+GS_BOOL  IsUserSignedIn( GS_DWORD dwController );
+#endif
+GS_DWORD GetActiveUserIndex();
 
 // session:
 GS_VOID CreateSession(GSCB_Func fun_cb);
@@ -161,14 +168,47 @@ GS_VOID SetRichPresenceMode(GS_INT userIndex, GS_INT mode);
 GS_VOID UpdateDefaultPresenceInfo(GS_INT defaultInfo, GS_INT activeInfo);
 #endif
 
+// InGameMarke
+// DLC Category
+enum
+{
+    GS_EDLCCAT_Song =       0x00000001,
+    GS_EDLCCAT_Gear =       0x00000002,
+    GS_EDLCCAT_Album =      0x00000004,
+    GS_EDLCCAT_Package =    0x00000008,
+    GS_EDLCCAT_Customize =  0x00000010,
+
+	GS_EDLCCAT_DemoSong	=	0x00010000,
+    
+	GS_EDLCCAT_ALL =        0xffffffff,
+};
+typedef struct SMarketplaceItem
+{
+	GS_INT		m_iIndex;
+	GS_CHAR		m_strName[64];
+} CMarketplaceItem;
+typedef void (*ContentInstalledCallBack)( void );
+typedef struct SMarketplaceDetail
+{
+	GS_CHAR m_strName[64];
+	GS_CHAR m_strDesc[128];
+    GS_CHAR m_strImagePath[128];
+} CMarketplaceDetail;
+GS_BOOL GetProductList(GS_INT cat);
+GS_BOOL CheckProductListResult(TArray<CMarketplaceItem>& productList);
+GS_BOOL GetProductDetail(GS_UINT index);
+GS_BOOL CheckProductDetailResult(CMarketplaceDetail& detail);
+GS_BOOL	RequestDownloadItems( GS_INT index, ContentInstalledCallBack callBack );
+GS_BOOL AddIntoWishList(GS_INT index);
+
 // for log outside
 GS_VOID Log(const GS_CHAR* strFormat, ...);
 
 GS_INT AreUsersSignedIn();
 
 #ifdef __cplusplus
-} // extern "C"
 } // namespace GameService
+} // extern "C"
 #endif
 
 #endif

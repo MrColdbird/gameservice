@@ -378,6 +378,7 @@ int CellGcmUtil::SampleBasic::sampleMain(int argc, char *argv[])
 		TRUE	// dump log
 #if defined(_PS3)
 		, 5000	// free space available in KB for PS3
+		, 0		// enable ingame marketplace
 #endif
 		);
 

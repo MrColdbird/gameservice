@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "Master.h"
 #include "HttpSrv.h"
+#if defined(_PS3)
 #include "html-lexer.h"
+#endif
 
 
 

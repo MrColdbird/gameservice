@@ -17,7 +17,13 @@ public:
     FriendsSrv();
 	virtual ~FriendsSrv();
 
-	GS_BOOL	RetrieveFriendsList(GS_DWORD userIndex, GS_BOOL includeMe = FALSE);
+public:
+	GS_BOOL Initialize();
+	void Finalize();
+	void Update();
+
+public:
+	GS_BOOL	RetrieveFriendsList(GS_DWORD userIndex, GS_BOOL includeMe);
     GS_DWORD   GetFriendsCount() { return m_iFriendsCount; }
 
 #if defined(_XBOX) || defined(_XENON)
@@ -26,16 +32,15 @@ public:
 #elif defined(_PS3)
     SceNpId*  GetFriendsList() { return m_pFriends; }
 #endif
-            
 
 private:
-	GS_DWORD				m_iLastRetrievedTime;
+	GS_DWORD			m_iLastRetrievedTime;
+	GS_DWORD			m_iFriendsCount;
+
 #if defined(_XBOX) || defined(_XENON)
-    GS_DWORD				m_iFriendsCount;
     XONLINE_FRIEND*     m_pFriends;
-    XUID*               m_pXUIDs;
+    XUID*				m_pXUIDs;
 #elif defined(_PS3)
-    GS_UINT				m_iFriendsCount;
     SceNpId*            m_pFriends;
 #endif
 };

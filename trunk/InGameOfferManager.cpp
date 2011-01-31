@@ -6,6 +6,9 @@
 // ======================================================================================
 
 #include "stdafx.h"
+
+#if defined(_XBOX)
+
 #include "InGameDownloadManager.h"
 #include "InGameOfferManager.h"
 #include "SignIn.h"
@@ -159,7 +162,7 @@ GS_VOID OfferManager::AddOffer( const XMARKETPLACE_CONTENTOFFER_INFO& Offer )
     // XMemCpy(pOfferData->wszTitleName, Offer.wszTitleName, Offer.dwTitleNameLength);
 
 	// Add the record to the table
-	m_aOfferData.push_back(pOfferData);
+	m_aOfferData.AddItem(pOfferData);
 }
 
 //--------------------------------------------------------------------------------------
@@ -168,11 +171,11 @@ GS_VOID OfferManager::AddOffer( const XMARKETPLACE_CONTENTOFFER_INFO& Offer )
 //--------------------------------------------------------------------------------------
 GS_VOID OfferManager::ClearOffers()
 {
-	for (unsigned i = 0; i < m_aOfferData.size(); ++i)
+	for (unsigned i = 0; i < m_aOfferData.Num(); ++i)
 	{
-		GS_DELETE [] (BYTE*)m_aOfferData[i];
+		GS_DELETE [] m_aOfferData(i);
 	}
-	m_aOfferData.clear();
+	m_aOfferData.Empty();
 }
 
 // ======================================================== 
@@ -183,16 +186,16 @@ GS_BOOL OfferManager::IsOfferEnumerationFinished()
     return m_bIsOfferEnumerationFinished;
 }
 
-GS_VOID OfferManager::GetContentList(efd::vector<CMarketplaceItem>& productList)
+GS_VOID OfferManager::GetContentList(TArray<CMarketplaceItem>& productList)
 {
     if (m_bIsOfferEnumerationFinished)
     {
-        for (GS_UINT i=0; i<m_aOfferData.size(); i++)
+        for (GS_UINT i=0; i<m_aOfferData.Num(); i++)
         {
             CMarketplaceItem tmp;
             tmp.m_iIndex = i;
-            tmp.m_strName = (char*)(m_aOfferData.at(i)->wszOfferName);
-            productList.push_back(tmp);
+			strcpy(tmp.m_strName, (char*)(m_aOfferData(i)->wszOfferName));
+            productList.AddItem(tmp);
         }
     }
 }
@@ -200,23 +203,23 @@ GS_VOID OfferManager::GetProductDetail(GS_INT index, CMarketplaceDetail& detail)
 {
     if (m_bIsOfferEnumerationFinished)
     {
-        detail.m_strName = (char*)(m_aOfferData.at(index)->wszOfferName);
-        detail.m_strDesc = (char*)(m_aOfferData.at(index)->wszSellText);
+		strcpy(detail.m_strName, (char*)(m_aOfferData(index)->wszOfferName));
+        strcpy(detail.m_strDesc, (char*)(m_aOfferData(index)->wszSellText));
 
         // get image URL
         WCHAR tmp_imageURL[XMARKETPLACE_IMAGE_URL_MINIMUM_WCHARCOUNT*2];
-        XMarketplaceGetImageUrl(m_aOfferData.at(index)->dwTitleID, m_aOfferData.at(index)->qwOfferID, 
+        XMarketplaceGetImageUrl(m_aOfferData(index)->dwTitleID, m_aOfferData(index)->qwOfferID, 
                                 XMARKETPLACE_IMAGE_URL_MINIMUM_WCHARCOUNT*2, tmp_imageURL);
         size_t ret_value = 0; 
         wcstombs_s(&ret_value, m_cCurrentProductImageURL, XMARKETPLACE_IMAGE_URL_MINIMUM_WCHARCOUNT*2, tmp_imageURL, XMARKETPLACE_IMAGE_URL_MINIMUM_WCHARCOUNT*2);
-        detail.m_strImagePath = m_cCurrentProductImageURL;
+        strcpy(detail.m_strImagePath, m_cCurrentProductImageURL);
     }
 }
 GS_BOOL OfferManager::GetOfferIDByIndex( GS_INT index, ULONGLONG& offerID )
 {
-	if ( (size_t)index < m_aOfferData.size() )
+	if ( (size_t)index < m_aOfferData.Num() )
 	{
-		offerID = m_aOfferData.at( index )->qwOfferID;
+		offerID = m_aOfferData( index )->qwOfferID;
 		return TRUE;
 	}
 
@@ -267,3 +270,4 @@ GS_VOID OfferManager::MessageResponse(Message* message)
 
 } // namespace
 
+#endif

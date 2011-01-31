@@ -69,6 +69,9 @@ enum GS_TaskType
 	EGSTaskType_ViewReplay,
 	EGSTaskType_InputSpecialCode,
 	EGSTaskType_MarketplaceEnumeration,
+	EGSTaskType_ContentMgrEnumeration,
+	EGSTaskType_OfferMgrEnumeration,
+	EGSTaskType_RetrieveImageFromHTTP,
 	EGSTaskType_MAX,
 };
 

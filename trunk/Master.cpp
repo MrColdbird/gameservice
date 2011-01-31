@@ -10,23 +10,24 @@
 #include "Task.h"
 #include "Session.h"
 #include "Master.h"
+#include "Interface.h"
 #include "InterfaceMgr.h"
 #include "Stats.h"
 #include "Achievement.h"
 #include "Friends.h"
+#if defined(_XBOX) || defined(_XENON) || defined(_PS3)
+#include "InGameMarketplace.h"
+#endif
 #include "SysMsgBox.h"
 #include "LogFile.h"
+#include "HttpSrv.h"
+#ifdef GAMESERVIE_TRACKING_ENABLE
 #include "OSDK/Tracking/TrackingManager.h"
 #include <RendezVous.h>
-
-#if defined(_PS3)
-
-#ifdef INGAMEBROWSING
-#include "InGameBrowsing.h"
-#else
-#include "StoreBrowsing.h"
 #endif
 
+#if defined(_WINDOWS)
+#include <stdarg.h>
 #endif
 
 namespace GameService
@@ -40,39 +41,51 @@ Master* Master::G()
     if(!m_bInstanceFlag)
     {
         m_bInstanceFlag = TRUE;
-        m_pSingle = new(GSOPType) Master();
+        m_pSingle = GS_NEW Master();
         return m_pSingle;
     }
 
 	if (!m_pSingle)
-		FatalError( "No GameService Master instanced! \n" );
+        GS_Assert(0);
+        // FatalError( "No GameService Master instanced! \n" );
 
 	return m_pSingle;
 }
 
 Master::Master()
-: m_pMessageMgr(NULL), m_pTaskMgr(NULL), m_pInterfaceMgr(NULL), m_pSessionSrv(NULL), m_pSysMsgBoxManager(NULL),
-    m_pAchievementSrv(NULL), m_pTrackingMgr(NULL), m_pStatsSrv(NULL), m_pFriendsSrv(NULL), m_pLogFile(NULL),
-    m_iFreeSpaceAvailable(0)
+: m_pMessageMgr(NULL)
+, m_pTaskMgr(NULL)
+, m_pSessionSrv(NULL)
+, m_pInterfaceMgr(NULL)
+, m_pStatsSrv(NULL)
+, m_pAchievementSrv(NULL)
+, m_pFriendsSrv(NULL)
+, m_pInGameMarketplace(NULL)
+, m_pTrackingMgr(NULL)
+, m_pSysMsgBoxManager(NULL)
+, m_pHttpSrv(NULL)
+, m_pLogFile(NULL)
+, m_iAchieveCount(0)
+, m_iVersionID(0)
+, m_bIsTrial(FALSE)
+, m_bInitialized(FALSE)
 #if defined(_PS3)
-    , m_bForceQuit(FALSE)
-#ifdef INGAMEBROWSING
-,m_pInGameBrowsingSrv(NULL)
-#else
-,m_pStoreBrowsingSrv(NULL)
-#endif
+, m_iFreeSpaceAvailable(0)
+, m_bForceQuit(FALSE)
+, m_bEnableInGameMarketplace(0)
 #endif
 {
 }
 
 GS_VOID Master::Initialize(GS_BOOL requireOnlineUser, GS_INT signInPanes, GS_INT achieveCount, GS_INT versionId, GS_BOOL isTrial, GS_BOOL isDumpLog
 #if defined(_PS3)
-                       , GS_INT freeSpaceAvail
+                       , GS_INT freeSpaceAvail, GS_BOOL enableInGameMarketplace
 #endif
                            )
 {
-    if (isDumpLog)
-        m_pLogFile = new(GSOPType) LogFile();
+	// engine specific code
+    m_bIsDumpLog = isDumpLog;
+    m_pLogFile = GS_NEW LogFile(m_bIsDumpLog);
 
     Log("GameService Master Waiting for initialization.");
 
@@ -81,11 +94,83 @@ GS_VOID Master::Initialize(GS_BOOL requireOnlineUser, GS_INT signInPanes, GS_INT
     m_bIsTrial = isTrial;
 #if defined(_PS3)
     m_iFreeSpaceAvailable = freeSpaceAvail;
+    m_bEnableInGameMarketplace = enableInGameMarketplace;
 #endif
 
     m_bInitialized = FALSE;
+
+	if (m_pSysMsgBoxManager == NULL)
+	{
+		m_pSysMsgBoxManager = GS_NEW SysMsgBoxManager();
+	}
+
+	
+	if (m_pMessageMgr == NULL)
+	{
+		m_pMessageMgr = GS_NEW MessageMgr();
+	}
+
+	if (m_pTaskMgr == NULL)
+	{
+		m_pTaskMgr = GS_NEW TaskMgr();
+	}
+
+	if (m_pInterfaceMgr == NULL)
+	{
+		m_pInterfaceMgr = GS_NEW InterfaceMgr(m_pMessageMgr);
+	}
+
+	// services:
+	if (m_pSessionSrv == NULL)
+	{
+		m_pSessionSrv = GS_NEW SessionSrv(m_pMessageMgr);
+	}
+
+	if (m_pStatsSrv == NULL)
+	{
+		m_pStatsSrv = GS_NEW StatsSrv(m_pMessageMgr);
+	}
+
+	if (m_pAchievementSrv == NULL)
+	{
+		m_pAchievementSrv = GS_NEW AchievementSrv(m_pMessageMgr, m_iAchieveCount
+#if defined(_PS3)
+                                                         , m_iFreeSpaceAvailable
+#endif
+                                                         );
+	}
+
+	if (m_pFriendsSrv == NULL)
+	{
+		m_pFriendsSrv = GS_NEW FriendsSrv();
+	}
+
+    // Tracking:
+#ifdef GAMESERVIE_TRACKING_ENABLE
+	if (m_pTrackingMgr == NULL)
+	{
+		m_pTrackingMgr = GS_NEW TrackingManager();
+	}
+#endif
+
+    // InGameMarketplace
+#if defined(_XBOX) || defined(_XENON) || defined(_PS3)
+#if defined(_PS3)
+    if (m_bEnableInGameMarketplace)
+#endif
+	{
+		if (m_pInGameMarketplace == NULL)
+		{
+			m_pInGameMarketplace = GS_NEW InGameMarketplace(m_pMessageMgr);
+		}
+	}
+#endif
+
+    if (NULL == m_pHttpSrv)
+		m_pHttpSrv = GS_NEW HttpSrv();
+
+
     // Initialize autologin
-	m_pSysMsgBoxManager = new(GSOPType) SysMsgBoxManager();
     SignIn::Initialize( 1, 4, requireOnlineUser, signInPanes );
 }
 
@@ -93,166 +178,164 @@ GS_VOID Master::InitServices()
 {
     if (m_bInitialized)
     {
-        ResetServices();
-        return;
+        Finalize();
     }
 
-	m_pMessageMgr = new(GSOPType) MessageMgr();
-	m_pTaskMgr = new(GSOPType) TaskMgr();
-	m_pInterfaceMgr = new(GSOPType) InterfaceMgr(m_pMessageMgr);
+	if (m_pStatsSrv)
+	{
+		m_pStatsSrv->Initialize();
+	}
 
-	// services:
-	m_pSessionSrv = new(GSOPType) SessionSrv(m_pMessageMgr);
-    m_pStatsSrv = new(GSOPType) StatsSrv(m_pMessageMgr);
-
-#if defined(_PS3)
-    if (m_bIsTrial)
+	if (m_pAchievementSrv)
     {
-       m_pAchievementSrv = NULL;
-    }
-    else
-#endif
-    {
-        m_pAchievementSrv = new(GSOPType) AchievementSrv(m_pMessageMgr, m_iAchieveCount
-#if defined(_PS3)
-                                                         , m_iFreeSpaceAvailable
-#endif
-                                                         );
-    }
+		m_pAchievementSrv->Initialize();
+    } 
 
-#if defined(_PS3)
-    // Force Quit by SCE, dont do anything!
-    if (m_bForceQuit)
-    {
-        return;
-    }
+	if (m_pFriendsSrv)
+	{
+		m_pFriendsSrv->Initialize();
+	}
+
+#if defined(_XBOX) || defined(_XENON) || defined(_PS3)
+    if (m_pInGameMarketplace)
+	{
+		m_pInGameMarketplace->Initialize();
+	}
 #endif
 
-    m_pFriendsSrv = new(GSOPType) FriendsSrv();
-    m_pFriendsSrv->RetrieveFriendsList(SignIn::GetActiveUserIndex());
+    if (m_pHttpSrv)
+        m_pHttpSrv->Initialize();
 
     // Tracking:
 #ifdef GAMESERVIE_TRACKING_ENABLE
-    m_pTrackingMgr = new(GSOPType) TrackingManager();
-    m_pTrackingMgr->SetVersionID(m_iVersionID);
-    m_pTrackingMgr->SetLicenseType(!m_bIsTrial);
-    m_pTrackingMgr->Initialize();
+	if (m_pTrackingMgr)
+	{   
+		m_pTrackingMgr->SetVersionID(m_iVersionID);
+		m_pTrackingMgr->SetLicenseType(!m_bIsTrial);
+		m_pTrackingMgr->Initialize();
+	}
 #endif
 
-#if defined(_PS3)
-#ifdef INGAMEBROWSING
-	m_pInGameBrowsingSrv = new(GSOPType) InGameBrowsing();
-#else
-	m_pStoreBrowsingSrv = new(GSOPType) StoreBrowsing();
-#endif
-#endif
-
-    m_bInitialized = TRUE;
-
+	m_bInitialized = TRUE;
     Log("GameService Master Initialized.");
+
 }
 
 GS_VOID Master::Finalize()
 {
     // ignore Session service for now
+	if (m_pStatsSrv) 
+		m_pStatsSrv->Finalize();
 
+	if (m_pAchievementSrv)
+		m_pAchievementSrv->Finalize();
 
-    if (m_pStatsSrv) 
-        m_pStatsSrv->Finalize();
+	if (m_pFriendsSrv)
+		m_pFriendsSrv->Finalize();
 
-    if (m_pAchievementSrv)
-        m_pAchievementSrv->Finalize();
-}
+#if defined(_XBOX) || defined(_XENON) || defined(_PS3)
+    if (m_pInGameMarketplace)
+        m_pInGameMarketplace->Finalize();
+#endif
 
-GS_VOID Master::ResetServices()
-{
-    Finalize();
-
-    // ignore Session service for now
-
-
-    if (m_pStatsSrv) 
-        m_pStatsSrv->Initialize();
-
-    if (m_pAchievementSrv)
-        m_pAchievementSrv->Initialize();
-
-    if (m_pFriendsSrv)
-        m_pFriendsSrv->RetrieveFriendsList(SignIn::GetActiveUserIndex());
+    if (m_pHttpSrv)
+        m_pHttpSrv->Finalize();
 
     // Tracking:
 #ifdef GAMESERVIE_TRACKING_ENABLE
-    if (m_pTrackingMgr) 
-        m_pTrackingMgr->Initialize();
+	if (m_pTrackingMgr)
+		m_pTrackingMgr->Finalize();
 #endif
 
+	m_bInitialized = FALSE;
 }
+
 
 GS_VOID Master::Destroy()
 {
-    DeleteThis<Master>(this);
+	Finalize();
+    GS_DELETE this;
 }
 
 Master::~Master()
 {
 	if (m_pMessageMgr)
 	{
-		Delete<MessageMgr>(m_pMessageMgr);
+		GS_DELETE m_pMessageMgr;
+		m_pMessageMgr = NULL;
 	}
 	if (m_pTaskMgr)
 	{
-		Delete<TaskMgr>(m_pTaskMgr);
+		GS_DELETE m_pTaskMgr;
+		m_pTaskMgr = NULL;
 	}
 	if (m_pInterfaceMgr)
 	{
-		Delete<InterfaceMgr>(m_pInterfaceMgr);
+		GS_DELETE m_pInterfaceMgr;
+		m_pInterfaceMgr = NULL;
 	}
 	if (m_pStatsSrv)
 	{
-		Delete<StatsSrv>(m_pStatsSrv);
+		GS_DELETE m_pStatsSrv;
+		m_pStatsSrv = NULL;
 	}
 	if (m_pSessionSrv)
 	{
-		Delete<SessionSrv>(m_pSessionSrv);
+		GS_DELETE m_pSessionSrv;
+		m_pSessionSrv = NULL;
 	}
 	if (m_pAchievementSrv)
 	{
-		Delete<AchievementSrv>(m_pAchievementSrv);
+		GS_DELETE m_pAchievementSrv;
+		m_pAchievementSrv = NULL;
 	}
+	if (m_pFriendsSrv)
+	{
+		GS_DELETE m_pFriendsSrv;
+		m_pFriendsSrv = NULL;
+	}
+
 #ifdef GAMESERVIE_TRACKING_ENABLE
     if (m_pTrackingMgr)
     {
-        Delete<TrackingManager>(m_pTrackingMgr);
+        GS_DELETE m_pTrackingMgr;
+		m_pTrackingMgr = NULL;
     }
 #endif
     if (m_pSysMsgBoxManager)
     {
-        Delete<SysMsgBoxManager>(m_pSysMsgBoxManager);
+        GS_DELETE m_pSysMsgBoxManager;
+		m_pSysMsgBoxManager = NULL;
     }
     if (m_pFriendsSrv)
     {
-        Delete<FriendsSrv>(m_pFriendsSrv);
+        GS_DELETE m_pFriendsSrv;
+		m_pFriendsSrv = NULL;
+    }
+
+#if defined(_XBOX) || defined(_XENON) || defined(_PS3)
+    if (m_pInGameMarketplace)
+    {
+        GS_DELETE m_pInGameMarketplace;
+        m_pInGameMarketplace = NULL;
+    }
+#endif
+
+    if (m_pHttpSrv)
+    {
+        GS_DELETE m_pHttpSrv;
+        m_pHttpSrv = NULL;
     }
 
 #if defined(_PS3)
-#ifdef INGAMEBROWSING
-	if(m_pInGameBrowsingSrv)
-	{
-		Delete<InGameBrowsing>(m_pInGameBrowsingSrv);
-	}
-#else
-	if(m_pStoreBrowsingSrv)
-	{
-		Delete<StoreBrowsing>(m_pStoreBrowsingSrv);
-	}
-#endif
     SignIn::TermNP();
     SignIn::TermNet();
 #endif
 
     if (m_pLogFile)
     {
-        Delete<LogFile>(m_pLogFile);
+        GS_DELETE m_pLogFile;
+		m_pLogFile = NULL;
     }
 
  	m_bInstanceFlag = FALSE;
@@ -273,12 +356,14 @@ GS_VOID Master::Update()
 
     if (m_pTaskMgr)
         m_pTaskMgr->UpdateAll();
-#if defined(_PS3) && defined(INGAMEBROWSING)
-	if (m_pInGameBrowsingSrv && m_pInGameBrowsingSrv->IsInited())
-        m_pInGameBrowsingSrv->Update();
-#endif
+
     if (m_pSysMsgBoxManager)
         m_pSysMsgBoxManager->Update();
+
+#if defined(_XBOX) || defined(_XENON) || defined(_PS3)
+    if (m_pInGameMarketplace)
+        m_pInGameMarketplace->Update();
+#endif
 
 }
 
@@ -290,7 +375,7 @@ GS_BOOL Master::SendTrackingTag(GS_CHAR* cName, GS_CHAR* cAttribute)
 #ifdef GAMESERVIE_TRACKING_ENABLE
     return m_pTrackingMgr->SendTag(String(cName), String(cAttribute));
 #else
-    return FALSE;
+	return FALSE;
 #endif
 }
 
@@ -317,10 +402,30 @@ GS_VOID Master::Log(const GS_CHAR* strFormat, ...)
 #elif defined(_PS3)
 		vsnprintf( str, 512, strFormat, pArgList );
 #endif
-        m_pLogFile->Write(str);
+        m_pLogFile->DumpLog(str);
 
         va_end( pArgList );
     }
+}
+
+GS_BOOL Master::WriteLocalFile(GS_INT fileIndex, GS_BYTE* data, GS_DWORD size)
+{
+    if (m_pLogFile)
+    {
+        return m_pLogFile->WriteLocalFile(fileIndex, data, size);
+    }
+
+    return FALSE;
+}
+
+const GS_CHAR* Master::GetLocalFileName(GS_INT fileIndex)
+{
+    if (m_pLogFile)
+    {
+        return m_pLogFile->GetFileName(fileIndex);
+    }
+
+    return NULL;
 }
 
 } // namespace GameService

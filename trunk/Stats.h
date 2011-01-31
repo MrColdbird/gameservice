@@ -11,6 +11,7 @@
 
 #include "LeaderBoardDefinition.h"
 #include "Message.h"
+#include "TaskType.h"
 
 namespace GameService
 {
@@ -50,6 +51,8 @@ public:
     XUID                
 #elif defined(_PS3)
     SceNpId*
+#else
+	GS_INT
 #endif
                         GetRetrievedIDByIndex(GS_INT index);
 
@@ -82,6 +85,7 @@ public:
 
 	// inherit from MessageHandler
 	void MessageResponse(Message* message);
+	void SendMessageCallback(GS_INT taskType, GS_BOOL result);
 
 private:
 	GS_BOOL				        m_bUserStatsRetrieved;

@@ -13,11 +13,6 @@
 #if defined(_PS3)
 #include <netex/net.h>
 #include <sys/timer.h>
-#ifdef INGAMEBROWSING
-#include <InGameBrowsing.h>
-#else
-#include <StoreBrowsing.h>
-#endif
 #endif
 
 namespace GameService
@@ -26,8 +21,10 @@ namespace GameService
 //--------------------------------------------------------------------------------------
 // Static members
 //--------------------------------------------------------------------------------------
-GS_BOOL   SignIn::m_bBeforePressStart            = TRUE; 
+GS_BOOL   SignIn::m_bBeforePressStart            = TRUE;
+#if !defined(_WINDOWS)
 GS_DWORD	SignIn::m_dwActiveUserIndex           = 0;
+#endif
 #if defined(_XBOX) || defined(_XENON)
 GS_DWORD  SignIn::m_dwMinUsers                   = 0;     
 GS_DWORD  SignIn::m_dwMaxUsers                   = 4;     
@@ -59,6 +56,7 @@ GS_CHAR	SignIn::m_cUserName[XUSER_MAX_COUNT][MAX_USER_NAME] =
 GS_BOOL	SignIn::m_bCanNotifyNoProfile = FALSE;
 #elif defined(_PS3)
 GS_BOOL SignIn::m_bStarNPInProgress = FALSE;
+GS_BOOL SignIn::m_bIsStarNPRequestPending = FALSE;
 GS_INT                 SignIn::m_sceNPStatus       = SCE_NP_ERROR_NOT_INITIALIZED;
 SceNpId				SignIn::m_sceNpID			= 
 {
@@ -99,8 +97,14 @@ int                 SignIn::m_UserAge           = 0;
 #include "Customize/PS3_IDGarden.txt"
 
 // NP POOL
-#define NP_POOL_SIZE (128*1024)
-uint8_t np_pool[NP_POOL_SIZE];
+uint8_t G_NPPOOL[SCE_NP_MIN_POOL_SIZE];
+#define HTTP_POOL_SIZE      (512 * 1024)
+#define HTTP_COOKIE_POOL_SIZE      (128 * 1024)
+#define SSL_POOL_SIZE       (300 * 1024)
+static CellHttpsData G_caList;
+static GS_BYTE* G_HttpPool;
+static GS_BYTE* G_HttpCookiePool;
+static GS_BYTE* G_SslPool;
 #endif
 
 GS_UINT	SignIn::m_nNumUsers						= 0;							// Local users
@@ -260,8 +264,8 @@ GS_VOID SignIn::Initialize( GS_DWORD dwMinUsers,
 {
 #if defined(_XBOX) || defined(_XENON)
     // Sanity check inputs
-    Assert( dwMaxUsers <= 4 && dwMinUsers <= dwMaxUsers );
-    Assert( dwSignInPanes <= 4 && dwSignInPanes != 3 );
+    GS_Assert( dwMaxUsers <= 4 && dwMinUsers <= dwMaxUsers );
+    GS_Assert( dwSignInPanes <= 4 && dwSignInPanes != 3 );
 
     // Assign variables
     m_dwMinUsers = dwMinUsers;
@@ -275,7 +279,7 @@ GS_VOID SignIn::Initialize( GS_DWORD dwMinUsers,
     m_hNotification = XNotifyCreateListener( XNOTIFY_SYSTEM | XNOTIFY_LIVE );
     if( m_hNotification == NULL || m_hNotification == INVALID_HANDLE_VALUE )
     {
-        FatalError( "Failed to create state notification listener.\n" );
+        Master::G()->Log( "Failed to create state notification listener.\n" );
     }
 
     QuerySigninStatus();
@@ -299,6 +303,48 @@ GS_VOID SignIn::Initialize( GS_DWORD dwMinUsers,
 }
 
 #if defined(_PS3)
+static void
+freeCerts(void)
+{
+	if(G_caList.ptr != NULL)
+		GS_DELETE [] G_caList.ptr;
+}
+static int
+loadCerts(void)
+{
+	char *buf = NULL;
+	size_t size = 0;
+	int ret = 0;
+
+	ret = cellSslCertificateLoader(CELL_SSL_LOAD_CERT_ALL, NULL, 0, &size);
+	if(ret < 0){
+		Master::G()->Log("cellSslCertificateLoader() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+
+	memset(&G_caList, 0, sizeof(G_caList));
+	G_caList.ptr = (char*)GS_NEW GS_BYTE[size];
+	if(NULL == G_caList.ptr){
+		Master::G()->Log("malloc failed for cert pinter... \n");
+		ret = -1;
+		goto error;
+	}
+	buf = (char*)(G_caList.ptr);
+	G_caList.size = size;
+
+	ret = cellSslCertificateLoader(CELL_SSL_LOAD_CERT_ALL, buf, size, NULL);
+	if(ret < 0){
+		Master::G()->Log("cellSslCertificateLoader() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+
+	return 0;
+
+error:
+	freeCerts();
+	return ret;
+}
+
 GS_BOOL SignIn::StartNet()
 {
 	GS_INT ret = -1;
@@ -308,7 +354,7 @@ GS_BOOL SignIn::StartNet()
         ret = sys_net_initialize_network();
         if (ret != CELL_OK) 
         {
-            FatalError( "sys_net_initialize_network failed (0x%x)\n", ret );
+            Master::G()->Log( "sys_net_initialize_network failed (0x%x)\n", ret );
 
             ret = sys_net_finalize_network();
             if (ret < 0) 
@@ -328,6 +374,68 @@ GS_BOOL SignIn::StartNet()
     else
     {
         return FALSE;
+    }
+	
+    ret = cellSysmoduleLoadModule(CELL_SYSMODULE_HTTP);
+	if (ret < 0) {
+		Master::G()->Log("cellSysmoduleLoadModule failed (0x%x)", ret);
+		return FALSE;
+	}
+
+    // NOTE: 
+    // InGameMarketplace init only:
+    if (Master::G()->IsEnableInGameMarketplace())
+    {
+        // init NetCtl
+        ret = cellSysmoduleLoadModule(CELL_SYSMODULE_HTTPS);
+        if (ret < 0) {
+            Master::G()->Log("CELL_SYSMODULE_HTTPS failed. ret = 0x%x", ret);
+			return FALSE;
+        }
+
+		G_HttpPool = GS_NEW GS_BYTE[HTTP_POOL_SIZE];
+		if(G_HttpPool == NULL){
+			Master::G()->Log( "SignIn::StartNet - failed to malloc libhttp memory pool\n");
+			return FALSE;
+		}
+		
+		ret = cellHttpInit(G_HttpPool, HTTP_POOL_SIZE);
+        if(ret < 0){
+            Master::G()->Log("cellHttpInit() failed. ret = 0x%x\n", ret);
+            return FALSE;
+        }
+
+		G_HttpCookiePool = GS_NEW GS_BYTE[HTTP_COOKIE_POOL_SIZE];
+		if(G_HttpCookiePool == NULL){
+			Master::G()->Log( "SignIn::StartNet - failed to malloc libhttp memory pool\n");
+			return FALSE;
+		}
+		
+		ret = cellHttpInitCookie(G_HttpCookiePool, HTTP_COOKIE_POOL_SIZE);
+        if(ret < 0){
+            Master::G()->Log("cellHttpInitCookie() failed. ret = 0x%x\n", ret);
+            return FALSE;
+        }
+
+        if (loadCerts() < 0)
+            return FALSE;
+
+		G_SslPool = GS_NEW GS_BYTE[SSL_POOL_SIZE];
+		if(G_SslPool == NULL){
+			return FALSE;
+		}
+		
+		ret = cellSslInit(G_SslPool, SSL_POOL_SIZE);
+        if(ret < 0){
+            Master::G()->Log("cellSslInit() failed. ret = 0x%x\n", ret);
+            return FALSE;
+        }
+
+        ret = cellHttpsInit(1, &G_caList);
+        if(ret < 0){
+            Master::G()->Log("cellHttpsInit() failed. ret = 0x%x\n", ret);
+            return FALSE;
+        }
     }
 
     // init NetCtl
@@ -350,6 +458,7 @@ GS_BOOL SignIn::StartNP()
 {
     if (m_bStarNPInProgress)
     {
+        m_bIsStarNPRequestPending = TRUE;
         return FALSE;
     }
 
@@ -377,10 +486,10 @@ void SignIn::PS3_StartNP_Thread(uint64_t instance)
     ret = cellSysmoduleLoadModule(CELL_SYSMODULE_SYSUTIL_NP);
     if (ret >= 0)
     {
-        ret = sceNpInit(NP_POOL_SIZE, np_pool);
+        ret = sceNpInit(SCE_NP_MIN_POOL_SIZE, G_NPPOOL);
         if (ret != CELL_OK && ret != SCE_NP_ERROR_ALREADY_INITIALIZED) 
         {
-            FatalError( "sceInit failed (0x%x)\n", ret );
+            master->Log( "sceInit failed (0x%x)\n", ret );
 
             ret = sceNpTerm();
             if (ret < 0) 
@@ -399,6 +508,25 @@ void SignIn::PS3_StartNP_Thread(uint64_t instance)
     else
     {
         return;
+    }
+
+	// register notification when connection status changed
+	ret = sceNpManagerRegisterCallback(NpManagerCallBack, NULL);
+	if (ret < 0) {
+		master->Log("sceNpManagerRegisterCallback() failed. ret = 0x%x", ret);
+	}
+
+	int npStatus = -2;
+	ret = sceNpManagerGetStatus(&npStatus);
+    if (ret == 0)
+    {
+        m_bIsOnline = FALSE;
+        if (SCE_NP_MANAGER_STATUS_ONLINE == npStatus)
+        {
+            m_bIsOnline = TRUE;
+        }
+
+        master->Log("[GameService] - sceNpManagerGetStatus: %d", npStatus);
     }
 
 	ret = sceNpManagerGetNpId(&m_sceNpID);
@@ -442,27 +570,22 @@ void SignIn::PS3_StartNP_Thread(uint64_t instance)
     // support sub-signin
     master->InitServices();
 
-    if (master->GetAchievementSrv())
-        master->GetAchievementSrv()->ReadAchievements(0,0,master->GetAchievementSrv()->GetCountMax());
+ //   if (master->GetAchievementSrv())
+ //       master->GetAchievementSrv()->ReadAchievements(0,0,master->GetAchievementSrv()->GetCountMax());
 
     m_nNumUsers = 1;
 
 	//InGameBrowsing Init for trial version
-	if(Master::G()->IsTrialVersion())
-	{
-#ifdef INGAMEBROWSING
-		master->GetInGameBrowsingSrv()->Init();
-#else
-		master->GetStoreBrowsingSrv()->Init();
-#endif
-	}
+//     if(Master::G()->IsTrialVersion())
+//     {
+// #ifdef INGAMEBROWSING
+//         master->GetInGameBrowsingSrv()->Init();
+// #else
+//         master->GetStoreBrowsingSrv()->Init();
+// #endif
+//     }
 
     // sign in succeed!
-    // register notification when connection status changed
-	ret = sceNpManagerRegisterCallback(NpManagerCallBack, NULL);
-	if (ret < 0) {
-		master->Log("sceNpManagerRegisterCallback() failed. ret = 0x%x", ret);
-	}
 
     // ret = sceNpBasicRegisterContextSensitiveHandler(
     //         &m_NpCommID, NpBasicCallBack, NULL);
@@ -471,17 +594,10 @@ void SignIn::PS3_StartNP_Thread(uint64_t instance)
     //     sceNpBasicUnregisterHandler();
     // }
 
-	int npStatus = -2;
-	ret = sceNpManagerGetStatus(&npStatus);
-    if (ret == 0)
+    while (m_bIsStarNPRequestPending)
     {
-        m_bIsOnline = FALSE;
-        if (SCE_NP_MANAGER_STATUS_ONLINE == npStatus)
-        {
-            m_bIsOnline = TRUE;
-        }
-
-        master->Log("[GameService] - sceNpManagerGetStatus: %d", npStatus);
+        m_bIsStarNPRequestPending = FALSE;
+        PS3_StartNP_Thread(instance);
     }
 
     // NpBasicSendInitPresence();
@@ -505,14 +621,43 @@ GS_BOOL SignIn::GetNPStatus()
 
 void SignIn::TermNP()
 {
-    // sceNpBasicUnregisterHandler();
-    // sceNpManagerUnregisterCallback();
+    //sceNpBasicUnregisterHandler();
+    sceNpManagerUnregisterCallback();
     sceNpManagerTerm();
     sceNpTerm();
 	cellSysmoduleUnloadModule(CELL_SYSMODULE_NET);
 }
 void SignIn::TermNet()
 {
+    if (Master::G()->IsEnableInGameMarketplace())
+    {
+        cellHttpsEnd();
+
+        cellSslEnd();
+		if(G_SslPool != NULL){
+			GS_DELETE [] G_SslPool;
+			G_SslPool = NULL;
+		}
+
+        freeCerts();
+
+        cellHttpEndCookie();
+		if(G_HttpCookiePool != NULL){
+			GS_DELETE [] G_HttpCookiePool;
+			G_HttpCookiePool = NULL;
+		}
+
+        cellHttpEnd();
+		if(G_HttpPool != NULL){
+			GS_DELETE [] G_HttpPool;
+			G_HttpPool = NULL;
+		}
+    }
+
+	int ret = cellSysmoduleUnloadModule(CELL_SYSMODULE_HTTP);
+	if (ret < 0) {
+		Master::G()->Log("cellSysmoduleUnloadModule failed (0x%x)", ret);
+	}
     cellNetCtlTerm();
     cellSysmoduleUnloadModule(CELL_SYSMODULE_NETCTL);
     cellSysmoduleUnloadModule(CELL_SYSMODULE_SYSUTIL_NP);
@@ -605,7 +750,7 @@ GS_VOID SignIn::QuerySigninStatus()
 GS_DWORD SignIn::Update()
 {
 #if defined(_XBOX) || defined(_XENON)
-    Assert( m_hNotification != NULL );  // ensure Initialize() was called
+    GS_Assert( m_hNotification != NULL && m_hNotification != INVALID_HANDLE_VALUE);  // ensure Initialize() was called
 
     GS_DWORD dwRet = 0;
 
@@ -666,6 +811,17 @@ GS_DWORD SignIn::Update()
             }
             break;
 
+        case XN_LIVE_CONTENT_INSTALLED:
+            {                
+                // notify ContentMgr
+                Message* msg = Message::Create(EMessage_ContentInstalled);
+                if (msg)
+                {
+                    Master::G()->GetMessageMgr()->Send(msg);
+                }
+
+            }
+            break;
         } // switch( dwNotificationID )
     } // if( XNotifyGetNext() )
 
@@ -708,28 +864,31 @@ GS_DWORD SignIn::Update()
     // error message box prompting the user to either sign in again or exit the sample
     if( !m_bMessageBoxShowing && !m_bSystemUIShowing && m_bSigninUIWasShown && !AreUsersSignedIn() && !m_bBeforePressStart )
     {
-        GS_DWORD dwResult;
+		// TODO:
+		// Add Xbox system msgbox in SysMsgBox class
+     
+		//GS_DWORD dwResult;
 
-        ZeroMemory( &m_Overlapped, sizeof( XOVERLAPPED ) );
+        //ZeroMemory( &m_Overlapped, sizeof( XOVERLAPPED ) );
 
-        WCHAR strMessage[512];
-        swprintf_s( strMessage, L"No profile signed in. Please sign in a profile to continue");
+        //WCHAR strMessage[512];
+        //swprintf_s( strMessage, L"No profile signed in. Please sign in a profile to continue");
 
-        dwResult = XShowMessageBoxUI( XUSER_INDEX_ANY,
-                                      L"Signin Error",   // Message box title
-                                      strMessage,                 // Message
-                                      ARRAYSIZE( m_pwstrButtons ),// Number of buttons
-                                      m_pwstrButtons,             // Button captions
-                                      0,                          // Button that gets focus
-                                      XMB_ERRORICON,              // Icon to display
-                                      &m_MessageBoxResult,        // Button pressed result
-                                      &m_Overlapped );
+        //dwResult = XShowMessageBoxUI( XUSER_INDEX_ANY,
+        //                              L"Signin Error",   // Message box title
+        //                              strMessage,                 // Message
+        //                              ARRAYSIZE( m_pwstrButtons ),// Number of buttons
+        //                              m_pwstrButtons,             // Button captions
+        //                              0,                          // Button that gets focus
+        //                              XMB_ERRORICON,              // Icon to display
+        //                              &m_MessageBoxResult,        // Button pressed result
+        //                              &m_Overlapped );
 
-        if( dwResult != ERROR_IO_PENDING )
-            Master::G()->Log( "Failed to invoke message box UI, error %d", dwResult );
+        //if( dwResult != ERROR_IO_PENDING )
+        //    Master::G()->Log( "Failed to invoke message box UI, error %d", dwResult );
 
-        m_bSystemUIShowing = TRUE;
-        m_bMessageBoxShowing = TRUE;
+        //m_bSystemUIShowing = TRUE;
+        //m_bMessageBoxShowing = TRUE;
     }
 
     // Wait until the message box is discarded, then either exit or show the signin UI again
@@ -782,6 +941,8 @@ GS_DWORD SignIn::Update()
     cellSysutilCheckCallback();
 
     return 0;
+#else
+	return 0;
 #endif
 }
 
@@ -804,7 +965,7 @@ GS_BOOL SignIn::CheckPrivilege( GS_DWORD dwController, XPRIVILEGE_TYPE priv )
 // ======================================================== 
 // GetCurrentUserName
 // ======================================================== 
-GS_CHAR* SignIn::GetUserName(GS_UINT iUser)
+GS_CHAR* SignIn::GetUserNameStr(GS_UINT iUser)
 {
 #if defined(_XBOX) || defined(_XENON)
 	ZeroMemory( m_cUserName[iUser], MAX_USER_NAME );
@@ -814,6 +975,8 @@ GS_CHAR* SignIn::GetUserName(GS_UINT iUser)
     return m_cUserName[iUser];
 #elif defined(_PS3)
 	return (GS_CHAR*)m_sceOnlineName.data;
+#else
+	return 0;
 #endif
 }
 
@@ -831,6 +994,8 @@ void SignIn::ShowGamerCardUI(
                              XUID 
 #elif defined(_PS3)
                              SceNpId* 
+#else
+							 GS_INT
 #endif
                              id)
 {
@@ -848,7 +1013,7 @@ void SignIn::ShowGamerCardUI(
 #endif
 }
 
-void SignIn::StartGame(GS_UINT userIndex)
+GS_VOID SignIn::StartGame(GS_UINT userIndex)
 {
 #if defined(_XBOX) || defined(_XENON)
 	SetActiveUserIndex(userIndex);

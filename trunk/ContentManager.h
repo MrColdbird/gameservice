@@ -32,13 +32,13 @@ public:
     // Name: operator[]
     // Desc: Used for iterating over the XCONTENT_DATA collection
     //--------------------------------------------------------------------------------------
-    XCONTENT_DATA operator[](GS_DWORD dw) { return m_aContentData[dw];}
+    XCONTENT_DATA operator[](GS_DWORD dw) { return m_aContentData(dw);}
 
     //--------------------------------------------------------------------------------------
     // Name: Count
     // Desc: report the number of elements in the XCONTENT_DATA collection
     //--------------------------------------------------------------------------------------
-    GS_DWORD Count() { return m_aContentData.size(); }
+    GS_DWORD Count() { return m_aContentData.Num(); }
 
     GS_BOOL Enumerate();
 
@@ -63,9 +63,7 @@ public:
     GS_BOOL OnContentInstalled();
 
 private:
-	typedef efd::vector<XCONTENT_DATA> ContentDataArray;
-    
-    ContentDataArray  m_aContentData;         // Collection of XCONTENT_DATA
+	TArray<XCONTENT_DATA> m_aContentData;     // Collection of XCONTENT_DATA
 
     HANDLE m_hEnumeration;
     XOVERLAPPED m_Overlapped;   // Overlapped structure for asynchronous I/O

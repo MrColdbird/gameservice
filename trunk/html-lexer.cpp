@@ -9,6 +9,8 @@
 
 #include "stdafx.h"
 
+#if defined(_PS3)
+
 #define DEBUG 0
 
 #include "html-lexer.h"
@@ -418,3 +420,5 @@ abort:
 }
 
 } // namespace
+
+#endif

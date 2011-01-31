@@ -1,45 +1,57 @@
 #ifndef __CUSMEMORY_H__
 #define __CUSMEMORY_H__
 
-#pragma once
+#undef GS_USE_ENGINE_MEMORY_SCHEME
 
-void* operator new(size_t size, GameService::GS_MemoryOP type);
+// ======================================================== 
+// trigger the customized memory management
+// ======================================================== 
+#define GS_USE_ENGINE_MEMORY_SCHEME 0
 
-void* operator new[](size_t size, GameService::GS_MemoryOP type);
+// ======================================================== 
+// Customize memory allignment here:
+// Replace all the codes in micro GS_USE_ENGINE_MEMORY_SCHEME
+// in order to use your memory managerment
+// ======================================================== 
+#if GS_USE_ENGINE_MEMORY_SCHEME
+#ifdef _DEBUG
+#define EE_MEMORY_DEBUGGER
+#endif
+#include <efd/MemoryDefines.h>
+#include <efd/Asserts.h>
+#endif
 
-namespace GameService
-{
+#undef GS_NEW
+#if GS_USE_ENGINE_MEMORY_SCHEME
+#define GS_NEW          EE_EXTERNAL_NEW
+#define GS_DELETE       EE_EXTERNAL_DELETE 
+#define GS_MALLOC       EE_EXTERNAL_MALLOC
+#define GS_FREE         EE_EXTERNAL_FREE
+#else
+#define GS_NEW          new
+#define GS_DELETE       delete
+#define GS_MALLOC       malloc
+#define GS_FREE         free
+#endif
 
-GS_BYTE* Alloc(GS_SIZET size);
+#if GS_USE_ENGINE_MEMORY_SCHEME
+#define GS_Assert(pred)	EE_ASSERT(pred)
+#else
+#define GS_Assert(pred)	assert(pred)
+#endif
 
-GS_VOID Free(GS_VOID* ptr);
+//namespace GameService
+//{
 
-GS_BYTE* Realloc( GS_BYTE* ptr, GS_DWORD size, GS_DWORD oldsize );
+//GS_BYTE* Alloc(GS_SIZET size);
+//
+//GS_VOID Free(GS_VOID* ptr);
+//
+//GS_BYTE* Realloc( GS_BYTE* ptr, GS_DWORD size, GS_DWORD oldsize );
 
-template <class T>
-GS_VOID Delete(T*& ptr)
-{
-    if (ptr)
-    {
-        ptr->~T();
-        Free(ptr);
-    }
+//} // namespace
 
-    ptr = NULL;
-}
-template <class T>
-GS_VOID DeleteThis(T* ptr)
-{
-    if (ptr)
-    {
-        ptr->~T();
-        Free(ptr);
-    }
-}
 
-GS_VOID Assert(GS_BOOL value);
-
-} // namespace
 
 
 #endif // __CUSMEMORY_H__

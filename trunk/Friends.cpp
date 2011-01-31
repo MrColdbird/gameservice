@@ -13,33 +13,53 @@
 namespace GameService
 {
 
+#if defined(_XBOX) || defined(_XENON)
+
 FriendsSrv::FriendsSrv()
 : m_iFriendsCount(0), m_pFriends(NULL)
 {
-#if defined(_XBOX) || defined(_XENON)
     m_iLastRetrievedTime = GetTickCount();
     m_pXUIDs = NULL;
-#elif defined(_PS3)
-    // TODO:
-    // Add PS3 Tick function
-    m_iLastRetrievedTime = 0;
-#endif
 }
 
 FriendsSrv::~FriendsSrv()
 {
-    Free((GS_BYTE*)m_pFriends);
-    m_pFriends = NULL;
+	GS_Assert(m_pFriends == NULL);
+}
 
-#if defined(_XBOX) || defined(_XENON)
-    Free((GS_BYTE*)m_pXUIDs);
-    m_pXUIDs = NULL;
-#endif
+GS_BOOL FriendsSrv::Initialize()
+{
+	return TRUE;
+}
+
+void FriendsSrv::Finalize()
+{
+	if (m_pFriends)
+	{
+		GS_FREE((GS_BYTE*)m_pFriends);
+		m_pFriends = NULL;
+	}
+	return;
+}
+
+void FriendsSrv::Update()
+{
+	// Do not enumerate presence information too often to decrease network traffic
+	if( (GetTickCount() - m_iLastRetrievedTime) > 5000 )
+	{
+		// TODO: now we only retrive the first signedin user.
+		DWORD activeUserIndex = SignIn::GetActiveUserIndex();
+		if (SignIn::IsUserOnline(activeUserIndex))
+		{
+			RetrieveFriendsList(activeUserIndex, FALSE);
+		}
+		m_iLastRetrievedTime = GetTickCount();
+	}
+	return;
 }
 
 GS_BOOL FriendsSrv::RetrieveFriendsList(GS_DWORD userIndex, GS_BOOL includeMe)
 {
-#if defined(_XBOX) || defined(_XENON)
     GS_DWORD cbBuffer;
     HANDLE hFriendsEnum;
 
@@ -62,9 +82,9 @@ GS_BOOL FriendsSrv::RetrieveFriendsList(GS_DWORD userIndex, GS_BOOL includeMe)
             return FALSE;
 
         // Re-allocate the Friends buffer so that it is the exact size requested by XFriendsCreateEnumerator
-        Free( (GS_BYTE*)m_pFriends );
+        GS_FREE( (GS_BYTE*)m_pFriends );
         m_pFriends = NULL;
-        m_pFriends = ( XONLINE_FRIEND* )Alloc( cbBuffer );
+        m_pFriends = ( XONLINE_FRIEND* )GS_MALLOC( cbBuffer );
         if( m_pFriends == NULL )
         {
             CloseHandle( hFriendsEnum );
@@ -81,15 +101,15 @@ GS_BOOL FriendsSrv::RetrieveFriendsList(GS_DWORD userIndex, GS_BOOL includeMe)
         CloseHandle( hFriendsEnum );
 
         // copy xuids to an array
-        Free((GS_BYTE*)m_pXUIDs);
+        GS_FREE((GS_BYTE*)m_pXUIDs);
         m_pXUIDs = NULL;
         if (includeMe)
         {
-            m_pXUIDs = (XUID*)Alloc((m_iFriendsCount+1)*sizeof(XUID));
+            m_pXUIDs = (XUID*)GS_MALLOC((m_iFriendsCount+1)*sizeof(XUID));
         }
         else
         {
-            m_pXUIDs = (XUID*)Alloc(m_iFriendsCount*sizeof(XUID));
+            m_pXUIDs = (XUID*)GS_MALLOC(m_iFriendsCount*sizeof(XUID));
         }
 
         for (GS_UINT i=0; i<m_iFriendsCount; i++)
@@ -101,27 +121,69 @@ GS_BOOL FriendsSrv::RetrieveFriendsList(GS_DWORD userIndex, GS_BOOL includeMe)
             m_pXUIDs[m_iFriendsCount] = SignIn::GetXUID(SignIn::GetActiveUserIndex());
         }
     }
+	return TRUE;
+}
 #elif defined(_PS3)
 
-    // TODO:
-    // Add PS3 Tick function to limit retrieve frequency
+FriendsSrv::FriendsSrv()
+: m_iLastRetrievedTime(0)
+, m_iFriendsCount(0)
+, m_pFriends(NULL)
+{
+	// TODO:
+	// Add PS3 Tick function
+	m_iLastRetrievedTime = 0;
+}
 
-	int ret=-1;
-	ret = sceNpBasicGetFriendListEntryCount(&m_iFriendsCount);
+FriendsSrv::~FriendsSrv()
+{
+	GS_FREE((GS_BYTE*)m_pFriends);
+	m_pFriends = NULL;
+}
+
+GS_BOOL FriendsSrv::Initialize()
+{
+	return TRUE;
+}
+
+void FriendsSrv::Finalize()
+{
+}
+
+void FriendsSrv::Update()
+{
+	if( time(NULL) - m_iLastRetrievedTime > 5 )
+	{
+		if (SignIn::IsUserOnline())
+		{
+			RetrieveFriendsList(0,0);
+		}
+		m_iLastRetrievedTime = time(NULL);
+	}
+	return;
+}
+
+GS_BOOL FriendsSrv::RetrieveFriendsList(GS_DWORD, GS_BOOL includeMe)
+{
+	// TODO:
+	// Add PS3 Tick function to limit retrieve frequency
+	int ret = sceNpBasicGetFriendListEntryCount((uint32_t *)&m_iFriendsCount);
 	if (ret < 0) {
 		Master::G()->Log("sceNpBasicGetFriendListEntryCount() failed. ret = 0x%x", ret);
 		return FALSE;
 	}
 
-    Free( (GS_BYTE*)m_pFriends );
+	// TODO : Needs Optimization!
+
+    GS_FREE( (GS_BYTE*)m_pFriends );
     m_pFriends = NULL;
     if (includeMe)
     {
-        m_pFriends = (SceNpId *)Alloc(sizeof(SceNpId) * (m_iFriendsCount+1));
+        m_pFriends = (SceNpId *)GS_MALLOC(sizeof(SceNpId) * (m_iFriendsCount+1));
     }
     else
     {
-        m_pFriends = (SceNpId *)Alloc(sizeof(SceNpId) * (m_iFriendsCount));
+        m_pFriends = (SceNpId *)GS_MALLOC(sizeof(SceNpId) * (m_iFriendsCount));
     }
 	if (m_pFriends == NULL) {
         m_iFriendsCount = 0;
@@ -140,8 +202,39 @@ GS_BOOL FriendsSrv::RetrieveFriendsList(GS_DWORD userIndex, GS_BOOL includeMe)
     {
         m_pFriends[m_iFriendsCount] = SignIn::GetNpID();
     }
-#endif
 	return TRUE;
 }
 
-} // namespace GameService
+#else
+
+FriendsSrv::FriendsSrv()
+: m_iLastRetrievedTime(0)
+, m_iFriendsCount(0)
+{
+}
+
+FriendsSrv::~FriendsSrv()
+{
+}
+
+GS_BOOL FriendsSrv::Initialize()
+{
+	return FALSE;
+}
+
+void FriendsSrv::Finalize()
+{
+}
+
+void FriendsSrv::Update()
+{
+}
+
+GS_BOOL FriendsSrv::RetrieveFriendsList(GS_DWORD, GS_BOOL)
+{
+	return FALSE;
+}
+
+#endif
+
+} // namespace

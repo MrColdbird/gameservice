@@ -1654,6 +1654,62 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Commerce"
+			>
+			<File
+				RelativePath=".\ContentManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ContentManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InGameDownloadManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\InGameDownloadManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InGameMarketplace.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\InGameMarketplace.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InGameOfferManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\InGameOfferManager.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Http"
+			>
+			<File
+				RelativePath=".\html-lexer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\html-lexer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\HttpSrv.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\HttpSrv.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
 			>

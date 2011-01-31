@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "stdio.h"
 #include "Interface.h"
 
 //-------------------------------------------------------------------------------------
@@ -331,6 +332,9 @@ void Render()
 // Name: main()
 // Desc: The application's entry point
 //-------------------------------------------------------------------------------------
+#define TRACKING_TEST 1
+#include "BGE_cfg.spa.h"
+
 void __cdecl main()
 {
     // Initialize Direct3D
@@ -362,6 +366,19 @@ void __cdecl main()
         Update();   
 
 		GameService::Update();
+
+#if defined(TRACKING_TEST)
+		static int s_send = 0;
+		static int s_level_id = 0;
+		if (!s_send) // only send GAME_START tag once
+		{
+			s_send = 1;
+			char tracking_attr[128];
+			//char ls_reason[10];
+			sprintf_s(tracking_attr, 128, "VERSION=%d&LICENSETYPE=%d&LANGUAGE=li", 13, 0);
+			GameService::TrackingSendTag("GAME_START", tracking_attr);
+		}
+#endif
 
         // Render the scene
         Render();

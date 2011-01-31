@@ -5,7 +5,7 @@
 // Description  : 
 // ======================================================================================
 
-#pragma once
+//#pragma once
 #ifndef GAMESERVICE_UTILS_H
 #define GAMESERVICE_UTILS_H
 
@@ -21,13 +21,16 @@ typedef int                 GS_INT;
 typedef unsigned int        GS_UINT;
 typedef unsigned long       GS_DWORD;
 typedef unsigned short      GS_WORD;
-typedef unsigned short      GS_UINT16;
+typedef __int16				GS_INT16;
+typedef unsigned __int16    GS_UINT16;
+typedef __int32				GS_INT32; 
+typedef unsigned __int32	GS_UINT32;
 typedef float               GS_FLOAT;
 typedef double              GS_DOUBLE;
-typedef signed __int64      GS_INT64;
-typedef unsigned __int64    GS_UINT64;  
+typedef __int64				GS_INT64;
+typedef unsigned __int64	GS_UINT64;  
 typedef unsigned long       GS_SIZET;
-typedef unsigned __int64 GS_MemoryOP;
+typedef unsigned __int64	GS_MemoryOP;
 
 #elif defined(_PS3)
 typedef void            GS_VOID;
@@ -38,16 +41,17 @@ typedef int32_t         GS_INT;
 typedef uint32_t        GS_UINT;
 typedef int32_t         GS_DWORD;
 typedef int16_t         GS_WORD;
+typedef int16_t			GS_INT16;
 typedef uint16_t        GS_UINT16;
 typedef float           GS_FLOAT;
 typedef double          GS_DOUBLE;
+typedef	int32_t			GS_INT32;
+typedef uint32_t		GS_UINT32;
 typedef int64_t         GS_INT64;
 typedef uint64_t        GS_UINT64;  
 typedef unsigned long   GS_SIZET;
 typedef uint64_t		GS_MemoryOP;
 
-#define TRUE 1
-#define FALSE 0
 
 extern int32_t STACK_SIZE; /* 16KB */
 extern int32_t EXIT_CODE;
@@ -55,12 +59,15 @@ extern int32_t THREAD_PRIO;
 
 #endif
 
+#define TRUE 1
+#define FALSE 0
+
 // define GS data type
 
 //--------------------------------------------------------------------------------------
 // Debug spew and error handling routines
 //--------------------------------------------------------------------------------------
-#if defined(_XBOX) || defined(_XENON) || defined(_WINDOWS)
+#if defined(_XBOX) || defined(_XENON)
 #ifdef  _Printf_format_string_  // VC++ 2008 and later support this annotation
 GS_VOID CDECL DebugOutput( _In_z_ _Printf_format_string_ const GS_CHAR*, ... );  // Un-modified debug spew
 GS_VOID CDECL __declspec(noreturn) FatalError( _In_z_ _Printf_format_string_ const GS_CHAR*, ... ); // Debug spew with a forced break and exit
@@ -69,6 +76,9 @@ GS_VOID CDECL DebugOutput( const GS_CHAR*, ... );  // Un-modified debug spew
 GS_VOID CDECL __declspec(noreturn) FatalError( const GS_CHAR*, ... ); // Debug spew with a forced break and exit
 #endif
 #elif defined(_PS3)
+GS_VOID DebugOutput(const char * format, ...);
+GS_VOID FatalError( const char*, ... );
+#else
 GS_VOID DebugOutput(const char * format, ...);
 GS_VOID FatalError( const char*, ... );
 #endif
@@ -87,8 +97,6 @@ GS_VOID FatalError( const char*, ... );
 #else
     #define GameService_Verify( e ) GameService_Unused( e )
 #endif    
-
-extern GS_MemoryOP GSOPType;
 
 } // namespace GameService
 

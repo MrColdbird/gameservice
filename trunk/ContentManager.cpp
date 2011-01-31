@@ -6,6 +6,9 @@
 // ======================================================================================
 
 #include "stdafx.h"
+
+#if defined(_XBOX)
+
 #include "SignIn.h"
 #include "Master.h"
 #include "Task.h"
@@ -109,7 +112,7 @@ GS_VOID ContentManager::Cleanup()
     m_dwBufferSize = 0;
 
      // Clear out the collection prior to repopulating with more enumeration results
-    m_aContentData.clear();
+    m_aContentData.Empty();
 
 }
 
@@ -166,7 +169,7 @@ GS_VOID ContentManager::MessageResponse(Message* message)
                 PXCONTENT_DATA pTempContentData = ( PXCONTENT_DATA )m_pBuffer;
                 for ( GS_DWORD dw = 0; dw < taskDetailedResult; ++dw )
                 {
-                    m_aContentData.push_back( pTempContentData[dw] );
+                    m_aContentData.AddItem( pTempContentData[dw] );
                 }
             }
             break;
@@ -175,3 +178,5 @@ GS_VOID ContentManager::MessageResponse(Message* message)
 }
 
 } // namespace
+
+#endif

@@ -14,22 +14,22 @@ namespace GameService
 
 Message* Message::Create(MessageID messageId)
 {
-	return new(GSOPType) Message(messageId);
+	return GS_NEW Message(messageId);
 }
 
 void Message::Discard()
 {
-	DeleteThis<Message>(this);
+	GS_DELETE this;
 }
 
 Message::~Message()
 {
-	for(GS_INT i=0;i<m_PayloadArray.Num();i++)
+	for(GS_UINT i=0;i<m_PayloadArray.Num();i++)
 	{
 		if (m_PayloadArray(i))
 		{
 			// No destructor will be called!
-			Free(m_PayloadArray(i));
+			GS_DELETE m_PayloadArray(i);
 		}
 	}
 
@@ -40,7 +40,7 @@ void Message::AddTarget(MessageRecipient* target)
 {
 	if (m_recipient)
 	{
-		Assert(0); 
+		GS_Assert(0); 
 	}
 	else 
 	{
@@ -50,10 +50,35 @@ void Message::AddTarget(MessageRecipient* target)
 		}
 		else 
 		{
-			Assert(0);
+			GS_Assert(0);
 		}
 	}
 }
+
+GS_VOID Message::AddPayload( GS_BOOL payload ) 
+{ 
+	m_PayloadArray.AddItem((GS_BYTE*)GS_NEW GS_BOOL(payload)); 
+}
+#if defined(_XBOX) || defined(_XENON) || defined(_WINDOWS)
+GS_VOID Message::AddPayload( GS_DWORD payload ) 
+{ 
+	m_PayloadArray.AddItem((GS_BYTE*)GS_NEW GS_DWORD(payload)); 
+}
+#elif defined(_PS3)
+GS_VOID Message::AddPayload( GS_INT payload )
+{ 
+	m_PayloadArray.AddItem((GS_BYTE*)GS_NEW GS_INT(payload)); 
+}
+#endif
+GS_VOID Message::AddPayload( GS_FLOAT payload ) 
+{ 
+	m_PayloadArray.AddItem((GS_BYTE*)GS_NEW GS_FLOAT(payload)); 
+}		
+GS_VOID Message::AddPayload( GS_DOUBLE payload ) 
+{ 
+	m_PayloadArray.AddItem((GS_BYTE*)GS_NEW GS_DOUBLE(payload)); 
+}
+
 
 GS_BYTE* Message::ReadPayload(GS_UINT index)
 {
@@ -73,7 +98,7 @@ void MessageHandler::RemoveHandler(MessageRecipient* recipient)
 void MessageHandler::ExecuteAll(Message* message)
 {
 	MessageRecipient* Target = message->GetTarget();
-	for(GS_INT i=0;i<m_CallbackArray.Num();i++)
+	for(GS_UINT i=0;i<m_CallbackArray.Num();i++)
 	{
 		if (Target)
 		{
@@ -99,7 +124,7 @@ MessageMgr::~MessageMgr()
 	{
 		if(m_MessageHandlers[i])
 		{
-			Delete<MessageHandler>(m_MessageHandlers[i]);
+			GS_DELETE m_MessageHandlers[i];
 		}
 	}
 }
@@ -108,7 +133,7 @@ void MessageMgr::Register(MessageID messageId, MessageRecipient* recipient)
 {
 	if(NULL == m_MessageHandlers[messageId])
 	{
-		m_MessageHandlers[messageId] = new(GSOPType) MessageHandler(messageId);
+		m_MessageHandlers[messageId] = GS_NEW MessageHandler(messageId);
 	}
 	
 	m_MessageHandlers[messageId]->AddHandler(recipient);
@@ -120,7 +145,7 @@ GS_BOOL MessageMgr::Send(Message *message)
 
 	GS_BOOL bSent = FALSE;	
 	
-	Assert(message_id > EMessage_NONE && message_id < EMessage_MAX);
+	GS_Assert(message_id > EMessage_NONE && message_id < EMessage_MAX);
 
 	if(m_MessageHandlers[message_id])
 	{

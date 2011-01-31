@@ -9,6 +9,8 @@
 #include "Task.h"
 #include "Message.h"
 #include "Master.h"
+#include "HttpSrv.h"
+#include "LogFile.h"
 
 namespace GameService
 {
@@ -78,17 +80,23 @@ void GetTaskTypeName(GS_TaskType type, GS_CHAR* out)
     GET_TASKTYPE_NAME(EGSTaskType_ViewReplay)
     GET_TASKTYPE_NAME(EGSTaskType_InputSpecialCode)
     GET_TASKTYPE_NAME(EGSTaskType_MarketplaceEnumeration)
+    GET_TASKTYPE_NAME(EGSTaskType_ContentMgrEnumeration)
+    GET_TASKTYPE_NAME(EGSTaskType_OfferMgrEnumeration)
     }
 }
 
-Task::Task(CTaskID TaskId
+Task::Task(CTaskID taskId
 #if defined(_PS3)
            , GS_INT ctxId
 #endif
            )
-: m_TaskID(TaskId), m_TaskResult(0), m_TaskRecipient(NULL),m_TaskStarted(FALSE),m_TaskFinished(FALSE)
+: m_TaskRecipient(NULL)
+, m_TaskID(taskId)
+, m_TaskStarted(FALSE)
+, m_TaskFinished(FALSE)
+, m_TaskResult(0)
 #if defined(_PS3)
-    , m_sceTransId(ctxId)
+ , m_sceTransId(ctxId)
 #endif
 {
 #if defined(_XBOX) || defined(_XENON)
@@ -126,8 +134,8 @@ GS_BOOL Task::Update()
 		return FALSE;
 	}
 
+	GS_DWORD DetailedResult=0;
 #if defined(_PS3)
-	GS_INT DetailedResult = 0;
     GS_INT bExecuting = 1;
     switch(GetTaskType())
     {
@@ -137,8 +145,21 @@ GS_BOOL Task::Update()
     case EGSTaskType_StatsReadFriend:
         bExecuting = sceNpScorePollAsync(m_sceTransId, &DetailedResult);
 		break;
+    case EGSTaskType_RetrieveImageFromHTTP:
+        if (Master::G()->GetHttpSrv()->IsLastQueryFinished())
+        {
+            if (Master::G()->WriteLocalFile(GS_EFileIndex_TmpImg, Master::G()->GetHttpSrv()->GetRecvData(), Master::G()->GetHttpSrv()->GetRecvSize()))
+                bExecuting = 0;
+            else
+                bExecuting = -1;
+        }
+        else
+        {
+            bExecuting = 1;
+        }
+        break;
 	default:
-		FatalError("Cannot do task for type: %d\n", GetTaskType());
+        Master::G()->Log("Task::Update - Cannot do task for type: %d\n", GetTaskType());
         break;
     }
 
@@ -158,65 +179,48 @@ GS_BOOL Task::Update()
         m_TaskResult = 0;
     }
 
-#else
-	if(!XHasOverlappedIoCompleted(&m_XOverlapped))
-		return FALSE;
+#elif defined(_XBOX) || defined(_XENON)
+	DWORD ExtendResult;
 
-	GS_DWORD DetailedResult,ExtendResult;
-	m_TaskResult = XGetOverlappedResult(&m_XOverlapped, &DetailedResult, false );
-	ExtendResult = XGetOverlappedExtendedError(&m_XOverlapped);
+    switch(GetTaskType())
+    {
+    case EGSTaskType_RetrieveImageFromHTTP:
+        if (Master::G()->GetHttpSrv()->IsLastQueryFinished())
+        {
+            if (Master::G()->WriteLocalFile(GS_EFileIndex_TmpImg, Master::G()->GetHttpSrv()->GetRecvData(), Master::G()->GetHttpSrv()->GetRecvSize()))
+                m_TaskResult = ERROR_SUCCESS;
+            else
+                m_TaskResult = -1;
+        }
+        else
+        {
+            return FALSE;
+        }
+        break;
+    default:
+        if(!XHasOverlappedIoCompleted(&m_XOverlapped))
+            return FALSE;
+
+        m_TaskResult = XGetOverlappedResult(&m_XOverlapped, &DetailedResult, false );
+        ExtendResult = XGetOverlappedExtendedError(&m_XOverlapped);
+        break;
+    }
+
 #endif
 
 	Message* message = NULL;
 
-	if(GetTaskType() < EGSTaskType_ShowXUI_Max)
-	{
-		// TODO:
-		Assert(0);
-
-//		if(!((OfOnlineService *)GEngine->OnlineService)->GetNotificationHandler()->IsDashBoardUsed())
-//		{
-//			if(GetTaskType() < EGSTaskType_ShowXUI_ShowKeybord_Max) // want to string verify:
-//			{
-//#if PS3	//++GengYong
-//				if (((OfOnlineService *)GEngine->OnlineService)->GetVirtualKeyboard()->ProbeKeyboardData())
-//				{
-//					//TaskStatus = ERROR_SUCCESS;
-//#endif	//--GengYnog
-//					GS_UINT user_index;
-//					FString result_str;
-//					((OfOnlineService *)GEngine->OnlineService)->GetVirtualKeyboard()->RetrieveKeyboardData(user_index,result_str);
-//					if(FALSE == ((OfOnlineService *)GEngine->OnlineService)->VerifyStringSyc(result_str))
-//					{
-//						SEND_UI_EVENT(UIEventType_ONLINE_COMMON,EOnline2UIEvent_Common_StringVerifyFailed);
-//						m_TaskFinished = TRUE;
-//						return TRUE;
-//					}
-//#if PS3	//++GengYong
-//				}
-//				else
-//				{
-//					//TaskStatus = ~ERROR_SUCCESS;
-//					return FALSE;
-//				}
-//#endif	//--GengYnog
-//			}
-//
-//			if (m_TaskRecipient)
-//				message = OnlineMessage::Create(EOnlineMessage_ShowXUIDone);
-//			//message->AddPayload(CTaskID);
-//			//OnlineMessageMgr::Get()->Send(message);
-//			//m_TaskFinished = TRUE;
-//			//return TRUE;
-//		}
-//
-//		//return FALSE;
-	}
-	else
-	{
+    switch(GetTaskType())
+    {
+    case EGSTaskType_RetrieveImageFromHTTP:
+		if (m_TaskRecipient)
+			message = Message::Create(EMessage_InternalTaskDone);
+        break;
+    default:
 		if (m_TaskRecipient)
 			message = Message::Create(EMessage_OnlineTaskDone);
-	}
+        break;
+    }
 
     Master::G()->Log("Task Finished - %s with %x", m_cTypeName, m_TaskResult);
 
@@ -257,7 +261,7 @@ void Task::Cancel()
     // AbortTransaction according to different API
 	if( m_TaskStarted )
 	{
-		DeleteThis<Task>(this);
+		GS_DELETE this;
 	}
 #endif
 #if defined(_XBOX) || defined(_XENON)
@@ -356,7 +360,7 @@ PXOVERLAPPED TaskMgr::AddTask(GS_TaskType taskType, MessageRecipient* taskRecipi
 	}
 
 	CTaskID NewId = GenerateTaskID(taskType, pos);
-	m_TasksArray[pos] = new(GSOPType) Task(NewId);
+	m_TasksArray[pos] = GS_NEW Task(NewId);
 
 	if (taskId)
 		*taskId = NewId;
@@ -384,7 +388,7 @@ void TaskMgr::StartTask(CTaskID taskId , GS_DWORD errorCode)
 		}
 	}
 	else
-		Assert(0);
+		GS_Assert(0);
 }
 #elif defined(_PS3)
 void TaskMgr::AddTask(GS_TaskType taskType, GS_INT ctxId, MessageRecipient* taskRecipient, CTaskID* taskId)
@@ -405,7 +409,7 @@ void TaskMgr::AddTask(GS_TaskType taskType, GS_INT ctxId, MessageRecipient* task
 	}
 
 	CTaskID NewId = GenerateTaskID(taskType, pos);
-	m_TasksArray[pos] = new(GSOPType) Task(NewId, ctxId);
+	m_TasksArray[pos] = GS_NEW Task(NewId, ctxId);
 
 	if (taskId)
 		*taskId = NewId;
@@ -431,7 +435,8 @@ void TaskMgr::RemoveTask(CTaskID taskId)
 	if(m_TasksArray[pos])
 	{
 		m_TasksArray[pos]->Close();
-		Delete<Task>(m_TasksArray[pos]);
+		GS_DELETE m_TasksArray[pos];
+		m_TasksArray[pos] = NULL;
 	}
 }
 
