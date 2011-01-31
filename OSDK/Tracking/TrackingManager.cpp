@@ -177,7 +177,7 @@ GS_BOOL TrackingManager::SendTag(const String& tagName, const String& attributes
 		return FALSE;
 
 	ProtocolCallContext * context = qNew ProtocolCallContext;
-	Assert(context != NULL);
+	GS_Assert(context != NULL);
 	
 	if (!Tracking::GetInstance()->SendTag(context, tagName, attributes))
 	{

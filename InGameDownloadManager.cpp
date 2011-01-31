@@ -6,11 +6,13 @@
 // ======================================================================================
 
 #include "stdafx.h"
+
+#if defined(_XBOX)
+
+#include "Array.h"
 #include "SignIn.h"
 #include "Master.h"
 #include "InGameDownloadManager.h"
-
-#include <efd/Foundation.h>
 
 namespace GameService
 {
@@ -171,12 +173,12 @@ GS_VOID
 DownloadManager::RemoveExpiredDownloads()
 {
     // First go through the set and find all the keepers
-    efd::vector<ULONGLONG> vKeepers;
+    TArray<ULONGLONG> vKeepers;
     for ( PendingDownloadMap::iterator iter = m_mPendingDownloads.begin(); iter != m_mPendingDownloads.end(); ++iter )
     {
         if ( ERROR_IO_PENDING == iter->second )
         {
-            vKeepers.push_back( iter->first );
+            vKeepers.AddItem( iter->first );
         }
     }
 
@@ -185,14 +187,14 @@ DownloadManager::RemoveExpiredDownloads()
     
 
     // Now add all the keepers back in if they are still pending
-    for ( GS_DWORD dw = 0; dw < vKeepers.size(); ++dw )
+    for ( GS_DWORD dw = 0; dw < vKeepers.Num(); ++dw )
     {
         GS_DWORD dwDownloadStatus;
-        GS_DWORD dwErr = XMarketplaceGetDownloadStatus( SignIn::GetActiveUserIndex(), vKeepers[dw], &dwDownloadStatus );
+        GS_DWORD dwErr = XMarketplaceGetDownloadStatus( SignIn::GetActiveUserIndex(), vKeepers(dw), &dwDownloadStatus );
         assert( dwErr == ERROR_SUCCESS );
         if ( dwErr == ERROR_SUCCESS && dwDownloadStatus == ERROR_IO_PENDING )
         {
-            m_mPendingDownloads[vKeepers[dw]] = dwDownloadStatus;
+            m_mPendingDownloads[vKeepers(dw)] = dwDownloadStatus;
         }
     }
 }
@@ -242,3 +244,5 @@ DownloadRequest::AddOffer( ULONGLONG qwOfferIDtoAdd )
 }
 
 } // namespace
+
+#endif

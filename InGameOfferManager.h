@@ -33,13 +33,13 @@ public:
 	// Name: Count
 	// Desc: report the number of elements in the XMARKETPLACE_CONTENTOFFER_INFO collection
 	//--------------------------------------------------------------------------------------
-	GS_DWORD Count() { return m_aOfferData.size(); }
+	GS_DWORD Count() { return m_aOfferData.Num(); }
 
 	//--------------------------------------------------------------------------------------
 	// Name: operator[]
 	// Desc: Allow iterating over the XMARKETPLACE_CONTENTOFFER_INFO collection
 	//--------------------------------------------------------------------------------------
-	const XMARKETPLACE_CONTENTOFFER_INFO& operator[](GS_DWORD dw){ return *m_aOfferData[dw]; }
+	const XMARKETPLACE_CONTENTOFFER_INFO& operator[](GS_DWORD dw){ return *(m_aOfferData(dw)); }
 
 	//--------------------------------------------------------------------------------------
 	// Name: Update
@@ -59,7 +59,7 @@ public:
 	GS_VOID MessageResponse(Message* message);
 
     GS_BOOL IsOfferEnumerationFinished();
-    GS_VOID GetContentList(efd::vector<CMarketplaceItem>& productList);
+    GS_VOID GetContentList(TArray<CMarketplaceItem>& productList);
     GS_VOID GetProductDetail(GS_INT index, CMarketplaceDetail& detail);
 	GS_BOOL GetOfferIDByIndex( GS_INT index, ULONGLONG& offerID );
 
@@ -78,9 +78,7 @@ private:
 	GS_VOID ClearOffers();
 
 private:
-	typedef efd::vector<PXMARKETPLACE_CONTENTOFFER_INFO> OfferDataArray;
-
-	OfferDataArray m_aOfferData;        // Collection of XMARKETPLACE_CONTENTOFFER_INFO structures
+	TArray<PXMARKETPLACE_CONTENTOFFER_INFO> m_aOfferData;        // Collection of XMARKETPLACE_CONTENTOFFER_INFO structures
 
     HANDLE m_hEnumeration;
     XOVERLAPPED m_Overlapped;   // Overlapped structure for asynchronous I/O

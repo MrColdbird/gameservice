@@ -18,18 +18,16 @@ namespace GameService
 {
 
 StatsSrv::StatsSrv(MessageMgr* msgMgr)
-: m_pStats(NULL), m_iError(0)
+: m_pStats(NULL)
+, m_iError(0)
 #if defined(_PS3)
-, m_ScoreCtxId(-1), m_TransactionId(-1), m_iRetrievedNum(0)
+, m_ScoreCtxId(-1)
+, m_iRetrievedNum(0)
+, m_TransactionId(-1)
 #elif defined(_XBOX) || defined(_XENON)
 , m_bFlushStatsWaiting(FALSE)
 #endif
 {
-	if (!Initialize())
-    {
-		Finalize();
-    }
-
 	if (msgMgr)
 	{
 		msgMgr->Register(EMessage_OnlineTaskDone,this);
@@ -43,15 +41,15 @@ StatsSrv::~StatsSrv()
 
 	if (m_pStats)
 	{
-		Free(m_pStats);
+		GS_DELETE [] m_pStats;
 		m_pStats = NULL;
 	}
 
-    for (GS_INT i=0;i<m_pLBInfoArray.Num();i++)
+    for (GS_UINT i=0;i<m_pLBInfoArray.Num();i++)
     {
         if (m_pLBInfoArray(i))
         {
-            Delete<LeaderboardInfo>(m_pLBInfoArray(i));
+            GS_DELETE m_pLBInfoArray(i);
         }
     }
     m_pLBInfoArray.Empty();
@@ -126,7 +124,7 @@ GS_BOOL StatsSrv::RetrieveLocalUserStats(GS_BOOL bImmediately)
 
 	if (m_pStats)
 	{
-		Free(m_pStats);
+		GS_DELETE [] m_pStats;
 		m_pStats = NULL;
 	}
 
@@ -152,7 +150,7 @@ GS_BOOL StatsSrv::RetrieveLocalUserStats(GS_BOOL bImmediately)
     }
 
     // Allocate the buffer
-    m_pStats = new(GSOPType) GS_BYTE[ cbResults ];
+    m_pStats = GS_NEW GS_BYTE[ cbResults ];
 
     // Retrieve the stats
     if (bImmediately)
@@ -299,7 +297,7 @@ StatsSrv::LeaderboardInfo::LeaderboardInfo(GS_INT lbNum, XSESSION_VIEW_PROPERTIE
 
     // index counter is for add customized properties
     GS_INT index = 0;
-    m_pViewProp = new(GSOPType) XSESSION_VIEW_PROPERTIES[m_iLBNum];
+    m_pViewProp = GS_NEW XSESSION_VIEW_PROPERTIES[m_iLBNum];
 
 	// init all leaderboards
 	for (GS_INT i=0;i<lbNum;i++,index++)
@@ -307,7 +305,7 @@ StatsSrv::LeaderboardInfo::LeaderboardInfo(GS_INT lbNum, XSESSION_VIEW_PROPERTIE
 		m_pViewProp[index].dwViewId = pViews[i].dwViewId;
 		m_pViewProp[index].dwNumProperties = pViews[i].dwNumProperties;
 		// init all properties in one leaderboard
-		m_pViewProp[index].pProperties = new(GSOPType) XUSER_PROPERTY[m_pViewProp[index].dwNumProperties];
+		m_pViewProp[index].pProperties = GS_NEW XUSER_PROPERTY[m_pViewProp[index].dwNumProperties];
 		for (GS_UINT j=0;j<m_pViewProp[index].dwNumProperties;j++)
 		{
 			m_pViewProp[index].pProperties[j].dwPropertyId = pViews[i].pProperties[j].dwPropertyId;
@@ -323,11 +321,11 @@ StatsSrv::LeaderboardInfo::~LeaderboardInfo()
 		{
 			if (m_pViewProp[i].pProperties)
 			{
-				Free(m_pViewProp[i].pProperties);
+				GS_DELETE [] m_pViewProp[i].pProperties;
 			}
 		}
 
-		Free(m_pViewProp);
+		GS_DELETE [] m_pViewProp;
 		m_pViewProp = NULL;
 		m_iLBNum = 0;
 	}
@@ -352,7 +350,7 @@ void StatsSrv::PreWriteLeaderboard(GS_INT lbNum, XSESSION_VIEW_PROPERTIES* pView
         Master::G()->Log("GameService SetLBInfo: Already have unfinished LBinfo: %i", m_pLBInfoArray.Num());
     }
 
-	LeaderboardInfo* pLBInfo = new(GSOPType) LeaderboardInfo(lbNum, pViews);
+	LeaderboardInfo* pLBInfo = GS_NEW LeaderboardInfo(lbNum, pViews);
     m_pLBInfoArray.AddItem(pLBInfo);
 }
 #endif
@@ -549,7 +547,7 @@ GS_BOOL StatsSrv::ReadLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT maxNum, G
 #if defined(_XBOX) || defined(_XENON)
             if(m_pStats)
             {
-                Free(m_pStats);
+                GS_DELETE [] m_pStats;
                 m_pStats = NULL;
             }
 #elif defined(_PS3)
@@ -557,7 +555,7 @@ GS_BOOL StatsSrv::ReadLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT maxNum, G
 #endif
             m_bIsReadingMyScore = FALSE;
 			m_bReadingLeaderboard = FALSE;
-            return TRUE;
+            return FALSE;
         }
 
         idx -= myScoreOffset;
@@ -584,7 +582,7 @@ GS_BOOL StatsSrv::ReadLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT maxNum, G
     // Throw away old results
     if(m_pStats)
     {
-        Free(m_pStats);
+        GS_DELETE [] m_pStats;
         m_pStats = NULL;
     }
 #elif defined(_PS3)
@@ -615,7 +613,7 @@ GS_BOOL StatsSrv::ReadLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT maxNum, G
     }
 
     // Allocate the buffer
-    m_pStats = new(GSOPType) GS_BYTE[ cbResults ];
+    m_pStats = GS_NEW GS_BYTE[ cbResults ];
 
     // Enumerate
     ret = XEnumerate(
@@ -692,7 +690,7 @@ GS_BOOL StatsSrv::ReadFriendsLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT ma
 #if defined(_XBOX) || defined(_XENON)
 	if(m_pStats)
 	{
-		Free(m_pStats);
+		GS_DELETE [] m_pStats;
 		m_pStats = NULL;
 	}
 #elif defined(_PS3)
@@ -701,8 +699,8 @@ GS_BOOL StatsSrv::ReadFriendsLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT ma
 	
     m_iFriendsIndexOffset = 0;
 
-	if(FALSE == Master::G()->GetFriendsSrv()->RetrieveFriendsList(userIndex, TRUE))
-		return FALSE;
+	//if(FALSE == Master::G()->GetFriendsSrv()->RetrieveFriendsList(userIndex, TRUE))
+	//	return FALSE;
 
     GS_INT friend_num = Master::G()->GetFriendsSrv()->GetFriendsCount() + 1; // always add my score
     if (0 == idx)
@@ -734,7 +732,7 @@ GS_BOOL StatsSrv::ReadFriendsLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT ma
     }
 
     // Allocate the buffer
-    m_pStats = new(GSOPType) GS_BYTE[ cbResults ];
+    m_pStats = GS_NEW GS_BYTE[ cbResults ];
 
     // Retrieve the stats
     CTaskID id = 0;
@@ -765,7 +763,7 @@ GS_BOOL StatsSrv::ReadFriendsLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT ma
     m_TransactionId = ret;
 
     GS_INT size = sizeof(SceNpScorePlayerRankData) * maxNum;
-    m_pFriendsRankData = (SceNpScorePlayerRankData*)Alloc(size);
+    m_pFriendsRankData = (SceNpScorePlayerRankData*)GS_MALLOC(size);
     if (m_pFriendsRankData == NULL) {
         sceNpScoreDestroyTransactionCtx(m_TransactionId);
         return FALSE;
@@ -791,7 +789,7 @@ GS_BOOL StatsSrv::ReadFriendsLeaderboard(GS_INT idx, GS_INT userIndex, GS_INT ma
         NULL);
     if (ret < 0) {
         Master::G()->Log("sceNpScoreGetRankingByNpId() failed. ret = 0x%x", ret);
-        Free((GS_BYTE*)m_pFriendsRankData);
+        GS_FREE((GS_BYTE*)m_pFriendsRankData);
         m_pFriendsRankData = NULL;
         sceNpScoreDestroyTransactionCtx(m_TransactionId);
         return FALSE;
@@ -835,6 +833,8 @@ GS_INT StatsSrv::GetRetrievedCount()
 #elif defined(_PS3)
 
     return m_iRetrievedNum - m_iFriendsIndexOffset;
+#else
+	return 0;
 #endif
 }
 
@@ -854,6 +854,8 @@ GS_CHAR* StatsSrv::GetRetrievedName(GS_INT index)
 
 #elif defined(_PS3)
     return m_pRankData[index].onlineName.data;
+#else
+	return 0;
 #endif
 }
 
@@ -873,6 +875,8 @@ GS_INT StatsSrv::GetRetrievedRank(GS_INT index)
 
 #elif defined(_PS3)
     return m_pRankData[index].serialRank;
+#else
+	return 0;
 #endif
 }
 
@@ -892,6 +896,8 @@ GS_INT64 StatsSrv::GetRetrievedScore(GS_INT index)
 
 #elif defined(_PS3)
     return m_pRankData[index].scoreValue;
+#else
+	return 0;
 #endif
 }
 
@@ -925,7 +931,7 @@ void StatsSrv::DebugOutputLeaderboard()
         return;
 
     Master::G()->Log("[GameService] - DebugOutputLeaderboard");
-    for (GS_INT i=0;i<m_TotalRecord;i++)
+    for (GS_UINT i=0;i<m_TotalRecord;i++)
     {
         Master::G()->Log("Rank: %i, Name: %s, Score: %i", i, m_pRankData[i].onlineName.data, m_pRankData[i].scoreValue);
     }
@@ -936,6 +942,8 @@ void StatsSrv::DebugOutputLeaderboard()
 XUID 
 #elif defined(_PS3)
 SceNpId*
+#else
+GS_INT
 #endif
 StatsSrv::GetRetrievedIDByIndex(GS_INT index)
 {
@@ -952,6 +960,8 @@ StatsSrv::GetRetrievedIDByIndex(GS_INT index)
 	return 0;
 #elif defined(_PS3)
     return &(m_pRankData[index].npId);
+#else
+	return 0;
 #endif
 }
 
@@ -983,6 +993,8 @@ int CompareRankingFunc(const void *data1, const void *data2)
 		return (0);
 	}
 	return (1);
+#else
+	return 0;
 #endif
 }
 
@@ -1014,13 +1026,29 @@ void StatsSrv::SortFriendsRanking()
 #endif
 }
 
+void StatsSrv::SendMessageCallback(GS_INT taskType, GS_BOOL result)
+{
+	// Message to Interface
+	Message* msg = Message::Create(EMessage_CallBackInterface);
+	if (msg)
+	{
+		msg->AddPayload(taskType);
+
+		msg->AddPayload(result);
+
+		msg->AddTarget(Master::G()->GetInterfaceMgr());
+
+		Master::G()->GetMessageMgr()->Send(msg);
+	}	
+}
+
 void StatsSrv::MessageResponse(Message* message)
 {
 	if (message->GetMessageID() == EMessage_SignInChanged)
 		return;
 
 	CTaskID task_id = *(CTaskID*)message->ReadPayload(0);
-	GS_TaskType taskType = (GS_TaskType)(*(GS_INT*)message->ReadPayload(1));
+	GS_INT taskType = (GS_TaskType)(*(GS_INT*)message->ReadPayload(1));
 	GS_DWORD taskResult = *(GS_DWORD*)message->ReadPayload(2);
 	GS_DWORD taskDetailedResult = *(GS_DWORD*)message->ReadPayload(3);
 #if defined(_XBOX) || defined(_XENON)
@@ -1079,7 +1107,7 @@ void StatsSrv::MessageResponse(Message* message)
 #if defined(_XBOX) || defined(_XENON)
             if (m_pLBInfoArray(0))
             {
-                Delete<LeaderboardInfo>(m_pLBInfoArray(0));
+                GS_DELETE m_pLBInfoArray(0);
                 m_pLBInfoArray.Remove(0);
             }
 #endif
@@ -1101,23 +1129,6 @@ void StatsSrv::MessageResponse(Message* message)
     }
 #endif
 
-	// Message to Interface
-	Message* msg = Message::Create(EMessage_CallBackInterface);
-	if (msg)
-	{
-		msg->AddPayload(taskType);
-#if defined(_XBOX) || defined(_XENON)
-		GS_BOOL result = (ERROR_SUCCESS == taskResult) ? TRUE : FALSE;
-#elif defined(_PS3)
-		GS_BOOL result = (0 == taskResult && taskDetailedResult >= 0) ? TRUE : FALSE;
-#endif
-		msg->AddPayload(result);
-
-		msg->AddTarget(Master::G()->GetInterfaceMgr());
-
-		Master::G()->GetMessageMgr()->Send(msg);
-	}
-
     // handle RetrieveMyScore after RetrieveLocal
     if (EGSTaskType_StatsRetrieveLocal == taskType && m_bIsReadingMyScore)
     {
@@ -1136,8 +1147,14 @@ void StatsSrv::MessageResponse(Message* message)
             {
                 m_pRankData[0].serialRank = m_pRankData[0].rank = m_pRankData[0].highestRank = 0;
             }
+#else
+		if (0)
+		{
 #endif
-            ReadLeaderboard(0, m_iMyScoreUserIndex, m_iMyScoreMaxNum, m_iMyScoreOffset);
+            if(!ReadLeaderboard(0, m_iMyScoreUserIndex, m_iMyScoreMaxNum, m_iMyScoreOffset))
+			{
+				SendMessageCallback(EGSTaskType_StatsRead, FALSE);
+			}
         }
         else
         {
@@ -1145,14 +1162,26 @@ void StatsSrv::MessageResponse(Message* message)
 			m_bReadingLeaderboard = FALSE;
         }
     }
-
     // forward to read all 
-    if (EGSTaskType_StatsRead == taskType && m_bReadRequestDuringMyScore)
+    else if (EGSTaskType_StatsRead == taskType && m_bReadRequestDuringMyScore)
     {
         m_bReadRequestDuringMyScore = FALSE;
-        ReadLeaderboard(m_bReadRequestDuringMyScore_idx, m_bReadRequestDuringMyScore_userIndex, m_bReadRequestDuringMyScore_maxNum, 0);
+        if(!ReadLeaderboard(m_bReadRequestDuringMyScore_idx, m_bReadRequestDuringMyScore_userIndex, m_bReadRequestDuringMyScore_maxNum, 0))
+		{
+			SendMessageCallback(EGSTaskType_StatsRead, FALSE);
+		}
     }
-
+	else
+	{
+#if defined(_XBOX) || defined(_XENON)
+		GS_BOOL result = (ERROR_SUCCESS == taskResult) ? TRUE : FALSE;
+#elif defined(_PS3)
+		GS_BOOL result = (0 == taskResult && taskDetailedResult >= 0) ? TRUE : FALSE;
+#else
+		GS_BOOL result = TRUE;
+#endif
+		SendMessageCallback(taskType, result);
+	}
 
 }
 

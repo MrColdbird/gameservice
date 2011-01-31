@@ -18,6 +18,7 @@ class InterfaceMgr : public MessageRecipient
 public:
 	InterfaceMgr() {}
 	InterfaceMgr(MessageMgr* msgMgr);
+	virtual ~InterfaceMgr() {}
 
 	// inherit from MessageHandler
 	void MessageResponse(Message* message);

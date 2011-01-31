@@ -20,6 +20,7 @@ class SessionSrv : public MessageRecipient
 public:
 	SessionSrv();
 	SessionSrv(MessageMgr* msgMgr);
+	virtual ~SessionSrv() {}
 
     GS_BOOL BeginSession();
     GS_BOOL JoinSession();

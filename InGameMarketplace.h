@@ -35,10 +35,10 @@ public:
 
 	GS_BOOL RequestContentList(GS_INT category);
     GS_BOOL RequestProductDetail(GS_INT index);
-    GS_BOOL CheckContentListFinished(efd::vector<CMarketplaceItem>& productList);
+    GS_BOOL CheckContentListFinished(TArray<CMarketplaceItem>& productList);
     GS_BOOL CheckProductDetailFinished(CMarketplaceDetail& detail);
 	GS_BOOL	RequestDownloadItems( GS_INT index, ContentInstalledCallBack callBack );
-    GS_BOOL Add2WishList(GS_INT index);
+    //GS_BOOL Add2WishList(GS_INT index);
 
 	// inherit from MessageHandler
 	void MessageResponse(Message* message);

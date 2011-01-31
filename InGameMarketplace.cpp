@@ -11,7 +11,6 @@
 #include "Task.h"
 #include "HttpSrv.h"
 #include "LogFile.h"
-#include "WishList.h"
 #include "Interface.h"
 
 #if defined(_XBOX)
@@ -210,12 +209,12 @@ GS_BOOL	InGameMarketplace::RequestDownloadItems( GS_INT index, ContentInstalledC
 	return FALSE;
 }
 
-GS_BOOL InGameMarketplace::CheckContentListFinished(efd::vector<CMarketplaceItem>& productList)
+GS_BOOL InGameMarketplace::CheckContentListFinished(TArray<CMarketplaceItem>& productList)
 {
     if (!m_bIsCatRequestPending)
         return FALSE;
 
-    productList.clear();
+    productList.Empty();
 
 #if defined(_XBOX)
     if (m_pOfferMgr && m_pOfferMgr->IsOfferEnumerationFinished())
@@ -259,7 +258,7 @@ GS_BOOL InGameMarketplace::CheckProductDetailFinished(CMarketplaceDetail& detail
 
             WCHAR tmp_imageURL[XMARKETPLACE_IMAGE_URL_MINIMUM_WCHARCOUNT*2];
             size_t ret_value = 0; 
-            mbstowcs_s(&ret_value, tmp_imageURL, XMARKETPLACE_IMAGE_URL_MINIMUM_WCHARCOUNT*2, detail.m_strImagePath.c_str(), XMARKETPLACE_IMAGE_URL_MINIMUM_WCHARCOUNT*2);
+            mbstowcs_s(&ret_value, tmp_imageURL, XMARKETPLACE_IMAGE_URL_MINIMUM_WCHARCOUNT*2, detail.m_strImagePath, XMARKETPLACE_IMAGE_URL_MINIMUM_WCHARCOUNT*2);
 
             dwErr = XStorageDownloadToMemory( SignIn::GetActiveUserIndex(), tmp_imageURL,
                                               sizeof( s_FileReadBuffer ), ( const BYTE* )s_FileReadBuffer,
@@ -285,7 +284,7 @@ GS_BOOL InGameMarketplace::CheckProductDetailFinished(CMarketplaceDetail& detail
             if (Master::G()->WriteLocalFile(GS_EFileIndex_TmpImg, (GS_BYTE*)s_FileReadBuffer, pResults.dwBytesTotal))
 			{
                 // Flash file system will set to Data/GFxAssets folder which is same as the LogFile class setting
-                detail.m_strImagePath = "GS_TmpDLCImgFile.png";
+                strcpy(detail.m_strImagePath, "GS_TmpDLCImgFile.png");
 			}
 
             m_bDownloadImageEnded = FALSE;
@@ -318,7 +317,7 @@ GS_BOOL InGameMarketplace::CheckProductDetailFinished(CMarketplaceDetail& detail
             {
                 m_bDownloadImageStarted = TRUE;
 
-                Master::G()->GetHttpSrv()->QueryURL(detail.m_strImagePath.c_str());
+                Master::G()->GetHttpSrv()->QueryURL(detail.m_strImagePath);
 
                 // let TaskMgr track the QueryURL process
                 CTaskID id = 0;
@@ -333,7 +332,7 @@ GS_BOOL InGameMarketplace::CheckProductDetailFinished(CMarketplaceDetail& detail
                     m_bDownloadImageEnded = FALSE;
                     m_bIsProdRequestPending = FALSE;
 
-                    detail.m_strImagePath = Master::G()->GetLocalFileName(GS_EFileIndex_TmpImg);
+                    strcpy(detail.m_strImagePath, Master::G()->GetLocalFileName(GS_EFileIndex_TmpImg));
                     return TRUE;
                 }
             }
@@ -344,31 +343,31 @@ GS_BOOL InGameMarketplace::CheckProductDetailFinished(CMarketplaceDetail& detail
     return FALSE;
 }
 
-GS_BOOL InGameMarketplace::Add2WishList(GS_INT index)
-{
-    WishlistItem tmp;
-    tmp.uId = 0;
-    tmp.szName = "";
-#if defined(_XBOX)
-    if (m_pOfferMgr && m_pOfferMgr->IsOfferEnumerationFinished())
-    {
-        tmp.uId = (*m_pOfferMgr)[index].qwOfferID;
-        Wishlist::GetSingleton()->AddItem(tmp);
-		return TRUE;
-    }
-#elif defined(_PS3)
-    if (m_pInGameBrowsing)
-    {
-        GS_CHAR tmp_id[64];
-        if (m_pInGameBrowsing->GetProductID(index, tmp_id))
-        {
-            tmp.szName = tmp_id;
-			return TRUE;
-        }
-    }
-#endif
-	return FALSE;
-}
+//GS_BOOL InGameMarketplace::Add2WishList(GS_INT index)
+//{
+//    WishlistItem tmp;
+//    tmp.uId = 0;
+//    tmp.szName = "";
+//#if defined(_XBOX)
+//    if (m_pOfferMgr && m_pOfferMgr->IsOfferEnumerationFinished())
+//    {
+//        tmp.uId = (*m_pOfferMgr)[index].qwOfferID;
+//        Wishlist::GetSingleton()->AddItem(tmp);
+//		return TRUE;
+//    }
+//#elif defined(_PS3)
+//    if (m_pInGameBrowsing)
+//    {
+//        GS_CHAR tmp_id[64];
+//        if (m_pInGameBrowsing->GetProductID(index, tmp_id))
+//        {
+//            tmp.szName = tmp_id;
+//			return TRUE;
+//        }
+//    }
+//#endif
+//	return FALSE;
+//}
 
 
 GS_VOID InGameMarketplace::MessageResponse(Message* message)

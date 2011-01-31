@@ -23,11 +23,12 @@ class MessageRecipient;
 class Task
 {
 public:
-#if defined(_XBOX) || defined(_XENON)
-	Task(CTaskID TaskId);
-#elif defined(_PS3)
-    Task(CTaskID taksId, GS_INT ctxId);
+	Task(CTaskID taskId
+#if defined(_PS3)
+	, GS_INT ctxId
 #endif
+		);
+
 	GS_BOOL Update();
 	void Close();
 	void Cancel();
@@ -50,12 +51,12 @@ private:
 	GS_BOOL		m_TaskStarted,m_TaskFinished;
     GS_CHAR		m_cTypeName[128];
 
-#if defined(_XBOX) || defined(_XENON)
 	GS_DWORD 		m_TaskResult;
+
+#if defined(_XBOX) || defined(_XENON)
 	XPLAYERLIST_RESULT	m_CustomUI_Result;
 	XOVERLAPPED			m_XOverlapped;
 #elif defined(_PS3)
-    GS_INT         m_TaskResult;
     GS_INT         m_sceTransId;
 #endif
 
@@ -90,7 +91,7 @@ public:
 	GS_DWORD GetTaskResult(CTaskID taskId);
 	GS_BYTE GetPosInTaskArray(CTaskID taskId) { return (taskId & 0x000000FF); }
 	GS_TaskType GetTaskType(CTaskID taskId) { return (GS_TaskType)((taskId & 0x0000FF00) >> 8); }
-	GS_BOOL IsTaskIDValid(CTaskID taskId) { return taskId != 0 && taskId != 0xFFFFFFFF; }	
+	GS_BOOL IsTaskIDValid(CTaskID taskId) { return taskId != 0 && taskId != GS_INT(0xFFFFFFFF); }	
 
 private:
 	CTaskID GenerateTaskID(GS_TaskType taskType, GS_BYTE pos);

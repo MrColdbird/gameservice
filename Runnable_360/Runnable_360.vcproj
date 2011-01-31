@@ -77,6 +77,9 @@
 			/>
 			<Tool
 				Name="VCX360ImageTool"
+				ProjectDefaults="xex.xml"
+				TitleID="0x58410AFA"
+				AdditionalSections="58410AFA=BGE_cfg.spa"
 			/>
 			<Tool
 				Name="VCBscMakeTool"

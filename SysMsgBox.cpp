@@ -12,16 +12,14 @@
 #include "Master.h"
 #include "InterfaceMgr.h"
 #include "Interface.h"
-#if defined(_PS3)
-#include <sysutil/sysutil_gamecontent.h>
-#endif
 
 namespace GameService
 {
 
 #if defined(_PS3)
-#define CMD_PRIO			1001
+#define CMD_PRIO			(1001)
 #define CMD_STACKSIZE		(64*1024)
+
 void thr_GameContentNoSpaceErrorDialog(GS_UINT64 arg)
 {
     cellGameContentErrorDialog(CELL_GAME_ERRDIALOG_NOSPACE_EXIT, (int)(arg), NULL);
@@ -31,31 +29,35 @@ void thr_GameContentNoSpaceErrorDialog(GS_UINT64 arg)
 
 SysMsgBoxManager::SysMsgBoxManager()
 {
+#if 0
     m_eMode = EMODE_IDLE;
 
 #if defined(_PS3)
     int ret = cellSysmoduleLoadModule( CELL_SYSMODULE_SYSUTIL_GAME );   
 	if ( ret != CELL_OK ) {
-        Master::G()->Log( "ERROR : cellSysmoduleLoadModule( CELL_SYSMODULE_SYSUTIL_GAME ) = 0x%x\n", ret );
-		return;
+        Master::G()->Log( "ERROR : cellSysmoduleLoadModule( CELL_SYSMODULE_SYSUTIL_GAME ) = 0x%x", ret );
 	}
+#endif
 #endif
 }
 SysMsgBoxManager::~SysMsgBoxManager()
 {
+#if 0
 #if defined(_PS3)
 	int ret = cellSysmoduleUnloadModule( CELL_SYSMODULE_SYSUTIL_GAME );
 	if ( ret != CELL_OK ) {
-        Master::G()->Log( "ERROR : cellSysmoduleUnloadModule( CELL_SYSMODULE_SYSUTIL_GAME ) = 0x%x\n", ret );
-		return;
+        Master::G()->Log( "ERROR : cellSysmoduleUnloadModule( CELL_SYSMODULE_SYSUTIL_GAME ) = 0x%x", ret );
 	}
+#endif
 #endif
 }
 
 void SysMsgBoxManager::Display(GS_INT mode, void* exdata1)
 {
+#if 0
     m_eMode = mode;
 
+#if !defined(_WINDOWS)
     // localize according to System Language setting
     switch(m_eMode)
     {
@@ -203,19 +205,23 @@ void SysMsgBoxManager::Display(GS_INT mode, void* exdata1)
 		}
         break;
     }
+#endif
+#endif
 }
 
 #if defined(_PS3)
 void CB_Dialog_Global( int button_type, void *userdata )
 {
+#if 0
 	SysMsgBoxManager* mgr = (SysMsgBoxManager*)userdata;
 	mgr->CB_Dialog(button_type);
+#endif
 }
 #endif
 
 void SysMsgBoxManager::Update()
 {
-#if defined(_PS3)
+#if 0//defined(_PS3)
 	int ret = -1;
     switch(m_eMode)
     {
@@ -343,6 +349,7 @@ void SysMsgBoxManager::Update()
 #if defined(_PS3)
 void SysMsgBoxManager::CB_Dialog( int button_type )
 {
+	GS_INT msgtype = 0;
     switch(button_type)
     {
 	case CELL_MSGDIALOG_BUTTON_YES:
@@ -351,8 +358,6 @@ void SysMsgBoxManager::CB_Dialog( int button_type )
 	case CELL_MSGDIALOG_BUTTON_NONE:
         break;
     }
-
-	GS_INT msgtype = 0;
 	switch(m_eMode)
 	{
 	case EMODE_SaveDataNoSpace:
@@ -372,9 +377,9 @@ void SysMsgBoxManager::CB_Dialog( int button_type )
 	Message* msg = Message::Create(EMessage_CallBackInterface);
 	if (msg)
 	{
-		msg->AddPayload(msgtype);
-
 		GS_BOOL result = (CELL_MSGDIALOG_BUTTON_YES == button_type) ? TRUE : FALSE;
+
+		msg->AddPayload(msgtype);
 
 		msg->AddPayload(result);
 

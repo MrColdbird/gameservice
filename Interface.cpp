@@ -15,17 +15,14 @@
 #include "Achievement.h"
 #include "SignIn.h"
 #include "SysMsgBox.h"
-#if defined(_PS3)
-#ifdef INGAMEBROWSING
-#include "InGameBrowsing.h"
-#else
-#include "StoreBrowsing.h"
-#endif
-#endif
 
 // ======================================================== 
 // GameService Interface for Game
 // ======================================================== 
+#if defined(_XBOX) || defined(_XENON) || defined(_PS3)
+
+#include "InGameMarketplace.h"
+
 namespace GameService
 {
 
@@ -34,13 +31,13 @@ GSCB_Func GS_CallBackFunc[EGSTaskType_MAX];
 // Update function
 GS_VOID Initialize(GS_BOOL requireOnline, GS_INT achieveCount, GS_INT versionId, GS_BOOL bTrial, GS_INT bDumpLog
 #if defined(_PS3)
-                   , GS_INT iFreeSpaceAvail
+                   , GS_INT iFreeSpaceAvail, GS_BOOL enableInGameMarketplace
 #endif
                    )
 {
 	Master::G()->Initialize(requireOnline, 1, achieveCount, versionId, bTrial, bDumpLog
 #if defined(_PS3)
-                            , iFreeSpaceAvail
+                            , iFreeSpaceAvail, enableInGameMarketplace
 #endif
                             ); 
 }
@@ -51,6 +48,16 @@ GS_VOID Update()
 GS_VOID Destroy()
 {
     Master::G()->Destroy();
+}
+GS_BOOL IsUserOnline()
+{
+#if defined(_XBOX) || defined(_XENON)
+	return SignIn::IsUserOnline(SignIn::GetActiveUserIndex());
+#elif defined(_PS3)
+	return SignIn::IsUserOnline();
+#else
+	return 1;
+#endif
 }
 
 // Profile check function
@@ -71,11 +78,11 @@ GS_INT GetSignedInUserCount()
 #endif
 	return 0;
 }
-GS_VOID SetBeforePressStart(GS_INT before)
+GS_VOID SetBeforePressStart(GS_BOOL before)
 {
     SignIn::SetBeforePressStart(before);
 }
-GS_INT GetBeforePressStart()
+GS_BOOL GetBeforePressStart()
 {
     return SignIn::GetBeforePressStart();
 }
@@ -239,6 +246,11 @@ GS_VOID RequestSignIn()
 #endif
 }
 
+GS_DWORD GetActiveUserIndex()
+{
+	return SignIn::GetActiveUserIndex();
+}
+
 // Leaderboard function:
 GS_VOID RetrieveLocalStats(GS_INT immediately, GS_INT boardId, GS_INT columnNum, GS_INT* columnIds, GSCB_Func fun_cb)
 {
@@ -255,26 +267,45 @@ GS_VOID RetrieveLocalStats(GS_INT immediately, GS_INT boardId, GS_INT columnNum,
 }
 GS_INT ReadLeaderboardFinished()
 {
+    if (!Master::G()->GetStatsSrv())
+        return 1;
+
     return !( Master::G()->GetStatsSrv()->IsReadingLeaderboard() );
 }
 GS_INT GetLeaderboardCount()
 {
+    if (!Master::G()->GetStatsSrv())
+        return 0;
+
     return Master::G()->GetStatsSrv()->GetRetrievedCount();
 }
-char* GetLeaderboardName(GS_INT index)
+GS_CHAR G_TempChar[8] = "none";
+GS_CHAR* GetLeaderboardName(GS_INT index)
 {
+    if (!Master::G()->GetStatsSrv())
+        return G_TempChar;
+
     return Master::G()->GetStatsSrv()->GetRetrievedName(index);
 }
 GS_INT GetLeaderboardRank(GS_INT index)
 {
+    if (!Master::G()->GetStatsSrv())
+        return 0;
+
     return Master::G()->GetStatsSrv()->GetRetrievedRank(index);
 }
 GS_INT GetLeaderboardScore(GS_INT index)
 {
-    return Master::G()->GetStatsSrv()->GetRetrievedScore(index);
+    if (!Master::G()->GetStatsSrv())
+        return 0;
+
+    return (GS_INT)Master::G()->GetStatsSrv()->GetRetrievedScore(index);
 }
 GS_INT GetStatsErrorCode()
 {
+    if (!Master::G()->GetStatsSrv())
+        return 0;
+
 	return Master::G()->GetStatsSrv()->GetErrorCode();
 }
 #if defined(_XBOX) || defined(_XENON)
@@ -298,16 +329,16 @@ GS_VOID WriteStats(GSCB_Func fun_cb, GS_INT lbNum, XSESSION_VIEW_PROPERTIES* vie
         return;
 
 	Master::G()->GetStatsSrv()->PreWriteLeaderboard(lbNum, views);
-	Master::G()->GetStatsSrv()->WriteLeaderboard(SignIn::GetActiveUserIndex()); // always the first user
 	GS_CallBackFunc[EGSTaskType_StatsWrite] = fun_cb;
+	Master::G()->GetStatsSrv()->WriteLeaderboard(SignIn::GetActiveUserIndex()); // always the first user
 }
 GS_VOID FlushStats(GSCB_Func fun_cb)
 {
     if (!Master::G()->GetStatsSrv())
         return;
 
-	Master::G()->GetStatsSrv()->FlushLeaderboard();
 	GS_CallBackFunc[EGSTaskType_StatsFlush] = fun_cb;
+	Master::G()->GetStatsSrv()->FlushLeaderboard();
 }
 GS_BOOL ReadStats(GS_INT boardId, GS_INT columnNum, GS_INT* columnIds, GS_INT rankIdx, GS_INT userIndex, GS_INT maxRowNum, GS_INT myScoreOffset, GSCB_Func fun_cb)
 {
@@ -324,7 +355,7 @@ GS_BOOL ReadFriendsStats(GS_INT boardId, GS_INT columnNum, GS_INT* columnIds, GS
         return FALSE;
 
 	Master::G()->GetStatsSrv()->GetLBDef().Set(boardId,columnNum,columnIds);
-	GS_CallBackFunc[EGSTaskType_StatsRead] = fun_cb;
+	GS_CallBackFunc[EGSTaskType_StatsReadFriend] = fun_cb;
 	userIndex = SignIn::GetActiveUserIndex();
 	return Master::G()->GetStatsSrv()->ReadFriendsLeaderboard(rankIdx, userIndex, maxRowNum);
 }
@@ -342,7 +373,7 @@ GS_VOID WriteStats(GSCB_Func fun_cb, GS_INT iLBId, GS_INT score)
         return;
 
 	Master::G()->GetStatsSrv()->GetLBDef().Set(iLBId,score);
-	GS_CallBackFunc[EGSTaskType_StatsRead] = fun_cb;
+	GS_CallBackFunc[EGSTaskType_StatsWrite] = fun_cb;
     Master::G()->GetStatsSrv()->WriteLeaderboard(0);
 }
 GS_BOOL ReadStats(GS_INT boardId, GS_INT score, GS_INT rankIdx, GS_INT userIndex, GS_INT maxRowNum, GS_INT myScoreOffset, GSCB_Func fun_cb)
@@ -360,7 +391,7 @@ GS_BOOL ReadFriendsStats(GS_INT boardId, GS_INT score, GS_INT rankIdx, GS_INT us
         return FALSE;
 
 	Master::G()->GetStatsSrv()->GetLBDef().Set(boardId,score);
-	GS_CallBackFunc[EGSTaskType_StatsRead] = fun_cb;
+	GS_CallBackFunc[EGSTaskType_StatsReadFriend] = fun_cb;
 	return Master::G()->GetStatsSrv()->ReadFriendsLeaderboard(rankIdx, userIndex, maxRowNum);
 }
 #endif
@@ -468,11 +499,11 @@ GS_VOID UnlockFullGame()
 	XShowMarketplaceUI(SignIn::GetActiveUserIndex(),XSHOWMARKETPLACEUI_ENTRYPOINT_CONTENTLIST,0,-1);
     //Master::G()->GetAchievementSrv()->ShowSystemUI(SignIn::GetActiveUserIndex());
 #elif defined(_PS3)
-#ifdef INGAMEBROWSING
-	Master::G()->GetInGameBrowsingSrv()->Start();
-#else
-	Master::G()->GetStoreBrowsingSrv()->Start();
-#endif
+//#ifdef INGAMEBROWSING
+//	Master::G()->GetInGameBrowsingSrv()->Start();
+//#else
+//	Master::G()->GetStoreBrowsingSrv()->Start();
+//#endif
 #endif
 }
 
@@ -521,6 +552,18 @@ GS_VOID PressStartButton(GS_INT userIndex)
 	SignIn::SetBeforePressStart(FALSE);
 	SignIn::QuerySigninStatus();
 	//SignIn::StorageDeviceReset();//clear storage device id.
+}
+#endif
+
+GS_CHAR* GetUserName(GS_UINT iUser)
+{
+	return SignIn::GetUserNameStr( iUser );
+}
+
+#if defined(_XBOX) || defined(_XENON)
+GS_BOOL  IsUserSignedIn( GS_DWORD dwController )
+{
+	return SignIn::IsUserSignedIn( dwController );
 }
 #endif
 
@@ -884,7 +927,7 @@ InterfaceMgr::InterfaceMgr(MessageMgr* msgMgr)
 
 GS_VOID InterfaceMgr::MessageResponse(Message* message)
 {
-	Assert(message->GetMessageID() == EMessage_CallBackInterface);
+	GS_Assert(message->GetMessageID() == EMessage_CallBackInterface);
 
 	GS_INT task_type = *(GS_INT*)message->ReadPayload(0);
 	GS_INT result = *(GS_INT*)message->ReadPayload(1);
@@ -894,3 +937,4 @@ GS_VOID InterfaceMgr::MessageResponse(Message* message)
 
 } // namespace GameService
 
+#endif // XBOX/XENON/PS3

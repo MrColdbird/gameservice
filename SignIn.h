@@ -80,7 +80,7 @@ public:
 	}
 
 	// Get the first signed-in user
-	static void SetActiveUserIndex(GS_DWORD user)
+	static GS_VOID SetActiveUserIndex(GS_DWORD user)
 	{
 		m_dwActiveUserIndex = user; 
 	}
@@ -118,6 +118,12 @@ public:
     {
         return m_sceLangCode;
     }
+#else
+	static GS_DWORD GetActiveUserIndex()
+	{
+		return 0;
+	}
+
 #endif
 
 	// for local user infos:
@@ -135,7 +141,7 @@ public:
 	}
 #elif defined(_PS3)
 #endif
-    static GS_CHAR* GetUserName(GS_UINT iUser);
+    static GS_CHAR* GetUserNameStr(GS_UINT iUser);
 
 #if defined(_XBOX) || defined(_XENON)
 	static XUID*	GetXUIDArray()
@@ -233,15 +239,17 @@ public:
     static GS_INT IsCableConnected();
 #endif
 
-	static void ShowGamerCardUI(
+	static GS_VOID ShowGamerCardUI(
 #if defined(_XBOX) || defined(_XENON)
                              XUID 
 #elif defined(_PS3)
                              SceNpId* 
+#else
+							 int
 #endif
                              id);
 
-    static void     SetBeforePressStart(GS_BOOL before)
+    static GS_VOID     SetBeforePressStart(GS_BOOL before)
     {
         m_bBeforePressStart = before;
     }
@@ -249,8 +257,8 @@ public:
     {
         return m_bBeforePressStart;
     }
-
-    static void StartGame(GS_UINT userInex);
+    
+    static GS_VOID StartGame(GS_UINT userInex);
 
     // Methods to drive autologin
     static GS_VOID Initialize( 
@@ -316,6 +324,7 @@ private:
     static const char                           m_NpProductID[64];
     static int              m_UserAge;
     static GS_BOOL          m_bStarNPInProgress;
+    static GS_BOOL          m_bIsStarNPRequestPending;
 #endif
 
 	// Latest SignIn infos

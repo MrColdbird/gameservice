@@ -3,9 +3,7 @@
 #define __SYSMSGBOXMANAGER_H__
 
 #if defined(_PS3)
-#include <sysutil/sysutil_sysparam.h>
-#include <sysutil/sysutil_msgdialog.h>
-#define GS_MSGBOX_STRING_MAX CELL_MSGDIALOG_STRING_SIZE
+#define GS_MSGBOX_STRING_MAX (CELL_MSGDIALOG_STRING_SIZE)
 #else
 #define GS_MSGBOX_STRING_MAX 512
 #endif
@@ -13,7 +11,7 @@
 namespace GameService
 {
 
-enum 
+enum SysMsgBoxMODE
 {
 	EMODE_IDLE = -1,
     EMODE_SaveDataNoSpace,

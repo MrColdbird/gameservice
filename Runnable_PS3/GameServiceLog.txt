@@ -1,18 +1,58 @@
-2010.11.16-17:45:11	GameService Master Waiting for initialization.
-2010.11.16-17:45:12	sceNpManagerGetNpId() failed. ret = 0x8002aa0a
-2010.11.16-17:45:12	[GameService] - GetOnlineId: 
-2010.11.16-17:45:12	sceNpManagerGetOnlineName() failed. ret = 0x8002aa0a
-2010.11.16-17:45:12	[GameService] - GetOnlineName: 
-2010.11.16-17:45:12	sceNpManagerGetAvatarUrl() failed. ret = 0x8002aa0a
-2010.11.16-17:45:12	[GameService] - GetAvatarUrl: 
-2010.11.16-17:45:12	sceNpManagerGetMyLanguages() failed. ret = 0x8002aa0a
-2010.11.16-17:45:12	[GameService] - GetMyLanguage: 0
-2010.11.16-17:45:12	sceNpManagerGetAccountRegion() failed. ret = 0x8002aa0a
-2010.11.16-17:45:12	[GameService] - GetAccountRegion: 
-2010.11.16-17:45:12	sceNpManagerGetAccountAge() failed. ret = 0x8002aa0a
-2010.11.16-17:45:12	[GameService] - GetAccountAge: 0
-2010.11.16-17:45:12	sceNpTrophyGetRequiredDiskSpace() failed. ret = 0x8002291b
-2010.11.16-17:45:12	sceNpBasicGetFriendListEntryCount() failed. ret = 0x8002aa0a
-2010.11.16-17:45:12	GameService Master Initialized.
-2010.11.16-17:45:12	[GameService] - sceNpManagerGetStatus: 0
-2010.11.16-17:45:13	<MANAGER CB> event:1, result:0x0
+2010.11.28-12:7:39	GameService Master Waiting for initialization.
+2010.11.28-12:7:39	sceNpManagerGetNpId() failed. ret = 0x8002aa0c
+2010.11.28-12:7:39	[GameService] - GetOnlineId: 
+2010.11.28-12:7:39	sceNpManagerGetOnlineName() failed. ret = 0x8002aa0c
+2010.11.28-12:7:39	[GameService] - GetOnlineName: 
+2010.11.28-12:7:39	sceNpManagerGetAvatarUrl() failed. ret = 0x8002aa0c
+2010.11.28-12:7:39	[GameService] - GetAvatarUrl: 
+2010.11.28-12:7:39	sceNpManagerGetMyLanguages() failed. ret = 0x8002aa0c
+2010.11.28-12:7:39	[GameService] - GetMyLanguage: 0
+2010.11.28-12:7:39	sceNpManagerGetAccountRegion() failed. ret = 0x8002aa0c
+2010.11.28-12:7:39	[GameService] - GetAccountRegion: 
+2010.11.28-12:7:39	sceNpManagerGetAccountAge() failed. ret = 0x8002aa0c
+2010.11.28-12:7:39	[GameService] - GetAccountAge: 0
+2010.11.28-12:7:39	sceNpTrophyGetRequiredDiskSpace() failed. ret = 0x8002291b
+2010.11.28-12:7:39	sceNpBasicGetFriendListEntryCount() failed. ret = 0x8002aa06
+2010.11.28-12:7:39	GameService Master Initialized.
+2010.11.28-12:7:39	[GameService] - sceNpManagerGetStatus: -1
+2010.11.28-12:8:16	sceNpScoreCreateTransactionCtx() failed. ret = 0x8002a1a4
+2010.11.28-12:9:22	sceNpScoreCreateTransactionCtx() failed. ret = 0x8002a1a4
+2010.11.28-12:9:37	<MANAGER CB> event:1, result:0x0
+2010.11.28-12:9:46	<MANAGER CB> event:2, result:0x0
+2010.11.28-12:9:49	[GameService] - <MANAGER CB> online
+2010.11.28-12:9:49	[GameService] - GetOnlineId: leaves
+2010.11.28-12:9:49	[GameService] - GetOnlineName: leaves
+2010.11.28-12:9:49	[GameService] - GetAvatarUrl: http://static-resource.sp-int.community.playstation.net/avatar/default/DefaultAvatar.png
+2010.11.28-12:9:49	[GameService] - GetMyLanguage: 2
+2010.11.28-12:9:49	[GameService] - GetAccountRegion: us
+2010.11.28-12:9:49	[GameService] - GetAccountAge: 30
+2010.11.28-12:9:49	sceNpTrophyDestroyHandle() failed. ret = 0x80022911
+2010.11.28-12:9:49	sceNpTrophyDestroyContext() failed. ret = 0x80022902
+2010.11.28-12:9:50	sceNpTrophyGetRequiredDiskSpace() failed. ret = 0x8002291b
+2010.11.28-12:9:50	[GameService] - sceNpManagerGetStatus: 3
+2010.11.28-12:10:12	Task Started - EGSTaskType_StatsWrite
+2010.11.28-12:10:16	Task Finished - EGSTaskType_StatsWrite with 0
+2010.11.28-12:11:2	ReadLeaderboard - Start: idx:1, ReadingLB:0, ReadingMyScore:0
+2010.11.28-12:11:20	Task Started - EGSTaskType_StatsRead
+2010.11.28-12:11:22	Task Finished - EGSTaskType_StatsRead with 0
+2010.11.28-12:17:4	Task Started - EGSTaskType_StatsWrite
+2010.11.28-12:17:40	Task Finished - EGSTaskType_StatsWrite with 0
+2010.11.28-12:19:13	ReadLeaderboard - Start: idx:1, ReadingLB:0, ReadingMyScore:0
+2010.11.28-12:19:13	Task Started - EGSTaskType_StatsRead
+2010.11.28-12:19:15	Task Finished - EGSTaskType_StatsRead with 0
+2010.11.28-13:18:13	[GameService] - <MANAGER CB> offline
+2010.11.28-13:18:13	sceNpManagerGetNpId() failed. ret = 0x8002aa0a
+2010.11.28-13:18:13	[GameService] - GetOnlineId: leaves
+2010.11.28-13:18:13	sceNpManagerGetOnlineName() failed. ret = 0x8002aa0c
+2010.11.28-13:18:13	[GameService] - GetOnlineName: leaves
+2010.11.28-13:18:13	sceNpManagerGetAvatarUrl() failed. ret = 0x8002aa0c
+2010.11.28-13:18:13	[GameService] - GetAvatarUrl: http://static-resource.sp-int.community.playstation.net/avatar/default/DefaultAvatar.png
+2010.11.28-13:18:13	sceNpManagerGetMyLanguages() failed. ret = 0x8002aa0c
+2010.11.28-13:18:13	[GameService] - GetMyLanguage: 2
+2010.11.28-13:18:13	sceNpManagerGetAccountRegion() failed. ret = 0x8002aa0c
+2010.11.28-13:18:13	[GameService] - GetAccountRegion: 
+2010.11.28-13:18:13	sceNpManagerGetAccountAge() failed. ret = 0x8002aa0c
+2010.11.28-13:18:13	[GameService] - GetAccountAge: 0
+2010.11.28-13:18:13	sceNpTrophyGetRequiredDiskSpace() failed. ret = 0x8002291b
+2010.11.28-13:18:13	sceNpBasicGetFriendListEntryCount() failed. ret = 0x8002aa06
+2010.11.28-13:18:13	[GameService] - sceNpManagerGetStatus: -1
